@@ -25,7 +25,7 @@ function Home() {
 
   const fetchMesses = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/messes');
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messes`);
       if (res.data.status === 'success') {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const today = days[new Date().getDay()];

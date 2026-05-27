@@ -42,7 +42,7 @@ function AdminPanel() {
 
   const fetchMessReviews = async (messName) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/reviews/mess/${encodeURIComponent(messName)}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/reviews/mess/${encodeURIComponent(messName)}`);
       if (res.data.status === 'success') {
         setSelectedMessReviews(res.data.reviews);
       }
@@ -55,10 +55,10 @@ function AdminPanel() {
     setIsLoading(true);
     try {
       const [messesRes, usersRes, ticketsRes, subsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/messes'),
-        axios.get('http://localhost:5000/api/admin/users'),
-        axios.get('http://localhost:5000/api/admin/tickets'),
-        axios.get('http://localhost:5000/api/admin/subscriptions')
+        axios.get(`${import.meta.env.VITE_API_URL}/api/admin/messes`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/admin/tickets`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/admin/subscriptions`)
       ]);
 
       if (messesRes.data && messesRes.data.status === 'success' && Array.isArray(messesRes.data.messes)) {
@@ -136,7 +136,7 @@ function AdminPanel() {
 
   const handleToggleMessStatus = async (messId, newStatus) => {
     try {
-      await axios.post('http://localhost:5000/api/admin/update-status', { id: messId, status: newStatus });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/update-status`, { id: messId, status: newStatus });
       setMessesList(prev => prev.map(m => m.id === messId ? { ...m, status: newStatus } : m));
       if (selectedMess && selectedMess.id === messId) {
         setSelectedMess(prev => ({ ...prev, status: newStatus }));
@@ -173,7 +173,7 @@ function AdminPanel() {
     const cleanPhone = `+91 ${basePhone}`;
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/add-mess-owner', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/add-mess-owner`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ function AdminPanel() {
     const user = usersList.find(u => u.id === userId);
     const newStatus = user.status === 'Active' ? 'Blocked' : 'Active';
     try {
-      await axios.post('http://localhost:5000/api/admin/update-status', { id: userId, status: newStatus });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/update-status`, { id: userId, status: newStatus });
       setUsersList(prev => prev.map(u => 
         u.id === userId ? { ...u, status: newStatus } : u
       ));
@@ -254,7 +254,7 @@ function AdminPanel() {
       return;
     }
     try {
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}`);
       setUsersList(prev => prev.filter(u => u.id !== userId));
       setMessesList(prev => prev.filter(m => m.id !== userId));
       setSelectedMess(null);
@@ -268,7 +268,7 @@ function AdminPanel() {
 
   const handleUpdateTicketStatus = async (ticketId, newStatus) => {
     try {
-      await axios.post('http://localhost:5000/api/admin/update-ticket-status', { ticket_id: ticketId, status: newStatus });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/update-ticket-status`, { ticket_id: ticketId, status: newStatus });
       setTicketsList(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
       if (selectedTicket && selectedTicket.id === ticketId) {
         setSelectedTicket(prev => ({ ...prev, status: newStatus }));

@@ -55,7 +55,7 @@ function MessDetail() {
   const fetchUserSubscriptions = async () => {
     if (!user || !user.id) return;
     try {
-      const res = await axios.get(`http://localhost:5000/api/subscriptions/user/${user.id}`);
+      const res = await axios.get(`/api/subscriptions/user/${user.id}`);
       if (res.data.status === 'success') {
         setUserSubscriptions(res.data.subscriptions);
       }
@@ -66,11 +66,11 @@ function MessDetail() {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/messes');
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messes`);
       if (res.data.status === 'success') {
         const found = res.data.messes.find(m => m.id === parseInt(id));
         if (found) {
-          const reviewsRes = await axios.get(`http://localhost:5000/api/reviews/mess/${encodeURIComponent(found.mess_name)}`);
+          const reviewsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/reviews/mess/${encodeURIComponent(found.mess_name)}`);
           if (reviewsRes.data.status === 'success') {
             setReviewsList(reviewsRes.data.reviews);
           }
@@ -85,7 +85,7 @@ function MessDetail() {
 
   const fetchMessDetail = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/messes');
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messes`);
       if (res.data.status === 'success') {
         const found = res.data.messes.find(m => m.id === parseInt(id));
         if (found) {

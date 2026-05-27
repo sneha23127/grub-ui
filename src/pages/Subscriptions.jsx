@@ -39,7 +39,7 @@ function Subscriptions() {
     const fetchSubscriptions = async () => {
       if (!user || !user.id) return;
       try {
-        const response = await fetch(`http://localhost:5000/api/subscriptions/user/${user.id}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/subscriptions/user/${user.id}`);
         const data = await response.json();
 
         if (data.status === 'success') {
@@ -96,7 +96,7 @@ function Subscriptions() {
   // Action Handlers
   const handleUpdateStatus = async (id, newStatus, extraData = {}) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/subscriptions/${id}/status`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/subscriptions/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus, ...extraData })
@@ -164,7 +164,7 @@ function Subscriptions() {
     try {
       const axios = (await import('axios')).default;
       if (feedbackType === 'review') {
-        await axios.post('http://localhost:5000/api/reviews', {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/reviews`, {
           user_id: user.id,
           user_name: user.name,
           mess_name: feedbackTarget,
@@ -173,7 +173,7 @@ function Subscriptions() {
         });
         alert('Thank you for your review! It will be visible to other students.');
       } else {
-        await axios.post('http://localhost:5000/api/tickets', {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/tickets`, {
           user_id: user.id,
           user_name: user.name,
           mess_name: feedbackTarget,

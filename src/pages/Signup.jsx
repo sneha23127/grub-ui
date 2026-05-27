@@ -44,7 +44,7 @@ function Signup() {
     const fullPhone = `${formData.countryCode} ${formData.phoneNum}`;
 
     try {
-      const response = await axios.post('http://localhost:5000/api/signup', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
         name: formData.name,
         email: formData.email,
         phone: fullPhone,

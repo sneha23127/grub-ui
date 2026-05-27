@@ -15,7 +15,7 @@ function Footer() {
 
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      await axios.post('http://localhost:5000/api/tickets', {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/tickets`, {
         user_name: user.name || 'Anonymous Guest',
         subject: subject,
         description: message,

@@ -32,7 +32,7 @@ function MessList() {
 
   const fetchMesses = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/messes');
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messes`);
       if (res.data.status === 'success') {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const today = days[new Date().getDay()];
@@ -109,7 +109,7 @@ function MessList() {
     localStorage.setItem('savedMesses', JSON.stringify(updated));
 
     try {
-      const res = await axios.post('http://localhost:5000/api/users/update-profile', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/update-profile`, {
         id: user.id,
         details: { ...user.details, savedMesses: updated }
       });

@@ -114,7 +114,7 @@ function OwnerPanel() {
         googleMapUrl: editOwnerData.googleMapUrl || ''
       };
 
-      const res = await axios.post('http://localhost:5000/api/users/update-profile', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/update-profile`, {
         id: messInfo.id,
         name: editOwnerData.owner,
         mess_name: editOwnerData.name,
@@ -150,7 +150,7 @@ function OwnerPanel() {
 
   const saveMenu = async (updatedMenu) => {
     try {
-      const res = await axios.post('http://localhost:5000/api/users/update-menu', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/update-menu`, {
         id: messInfo.id,
         menu_data: updatedMenu
       });
@@ -251,7 +251,7 @@ function OwnerPanel() {
 
   const fetchStudentsList = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/admin/users');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`);
       if (response.data.status === 'success') {
         const students = response.data.users.filter(u => u.role === 'student' || u.role === 'user');
         setStudentsList(students);
@@ -304,7 +304,7 @@ function OwnerPanel() {
   const fetchSubscribers = async () => {
     if (!messInfo.name) return;
     try {
-      const response = await axios.get(`http://localhost:5000/api/subscriptions/mess/${encodeURIComponent(messInfo.name)}`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/subscriptions/mess/${encodeURIComponent(messInfo.name)}`);
       if (response.data.status === 'success') {
         const subData = response.data.subscriptions.map(s => ({
           id: s.id,
@@ -337,7 +337,7 @@ function OwnerPanel() {
   const fetchReviews = async () => {
     if (!messInfo.name) return;
     try {
-      const response = await axios.get(`http://localhost:5000/api/reviews/mess/${encodeURIComponent(messInfo.name)}`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/reviews/mess/${encodeURIComponent(messInfo.name)}`);
       if (response.data.status === 'success') {
         setReviews(response.data.reviews || []);
       }
@@ -358,7 +358,7 @@ function OwnerPanel() {
 
   const handleUpdateSubscriberStatus = async (subId, newStatus) => {
     try {
-      const res = await axios.put(`http://localhost:5000/api/subscriptions/${subId}/status`, { status: newStatus });
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/subscriptions/${subId}/status`, { status: newStatus });
       if (res.data.status === 'success') {
         fetchSubscribers();
         alert(`Subscriber status updated to ${newStatus}`);
@@ -374,7 +374,7 @@ function OwnerPanel() {
       return;
     }
     try {
-      const res = await axios.delete(`http://localhost:5000/api/admin/users/${userId}`);
+      const res = await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}`);
       if (res.data.status === 'success') {
         fetchSubscribers();
         alert('User deleted completely from the database.');
@@ -469,7 +469,7 @@ function OwnerPanel() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/reviews/mess/${encodeURIComponent(messInfo.name)}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/reviews/mess/${encodeURIComponent(messInfo.name)}`);
         if (response.data.status === 'success') {
           setReviewsList(response.data.reviews);
         }
@@ -483,7 +483,7 @@ function OwnerPanel() {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/owner/tickets?mess_name=${encodeURIComponent(messInfo.name)}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/owner/tickets?mess_name=${encodeURIComponent(messInfo.name)}`);
         if (response.data.status === 'success') {
           setTicketsList(response.data.tickets.map(t => ({
             id: t.ticket_id,
@@ -503,7 +503,7 @@ function OwnerPanel() {
 
   const handleUpdateTicketStatus = async (ticketId, newStatus) => {
     try {
-      await axios.post('http://localhost:5000/api/admin/update-ticket-status', { ticket_id: ticketId, status: newStatus });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/update-ticket-status`, { ticket_id: ticketId, status: newStatus });
       setTicketsList(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
       if (selectedTicket && selectedTicket.id === ticketId) {
         setSelectedTicket(prev => ({ ...prev, status: newStatus }));
@@ -1722,7 +1722,7 @@ function OwnerPanel() {
       let userId = null;
       try {
         // Fetch all users to see if student already exists
-        const usersResponse = await axios.get('http://localhost:5000/api/admin/users');
+        const usersResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`);
         if (usersResponse.data.status === 'success') {
           const existingUser = usersResponse.data.users.find(u => u.email.toLowerCase() === userEmail);
           if (existingUser) {
@@ -1747,7 +1747,7 @@ function OwnerPanel() {
         }
 
         try {
-          const signupRes = await axios.post('http://localhost:5000/api/signup', {
+          const signupRes = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
             name: newSubData.name.trim(),
             email: userEmail,
             phone: formattedPhone,
@@ -1779,7 +1779,7 @@ function OwnerPanel() {
       const expiryDateStr = expiryDate.toISOString().split('T')[0];
 
       try {
-        const response = await axios.post('http://localhost:5000/api/subscriptions', {
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/subscriptions`, {
           user_id: userId,
           user_name: newSubData.name.trim(),
           user_phone: formattedPhone,

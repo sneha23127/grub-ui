@@ -75,7 +75,7 @@ function Payment() {
 
     const submitSubscription = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/subscriptions', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/subscriptions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(subscriptionData)
@@ -116,7 +116,7 @@ function Payment() {
     } else if (paymentMethod === 'upi') {
       const initializeRazorpay = async () => {
         try {
-          const orderRes = await fetch('http://localhost:5000/api/payments/create-order', {
+          const orderRes = await fetch(`${import.meta.env.VITE_API_URL}/api/payments/create-order`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -141,7 +141,7 @@ function Payment() {
             order_id: orderData.order.id,
             handler: async function (response) {
               try {
-                const verifyRes = await fetch('http://localhost:5000/api/payments/verify', {
+                const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/api/payments/verify`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({

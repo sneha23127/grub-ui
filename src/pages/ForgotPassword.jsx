@@ -78,7 +78,7 @@ function ForgotPassword() {
     setBanner(null);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/forgot-password', { email });
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/forgot-password`, { email });
       if (response.data.status === 'success') {
         setOtpSent(true);
         setCooldown(60); // 60 seconds cooldown
@@ -141,7 +141,7 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/reset-password', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/reset-password`, {
         email,
         otp: otpCode,
         password
