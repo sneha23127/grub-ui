@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
-import axios from 'axios';
 
 function Profile() {
   const [user, setUser] = useState(() => {
@@ -43,29 +42,15 @@ function Profile() {
   const handleSaveProfile = async () => {
     setIsEditing(false);
     
+    // In a real app, this would be an API call to the backend
     try {
       const currentSession = JSON.parse(sessionStorage.getItem('user') || '{}');
+      const updatedUser = { ...currentSession, ...user, role: currentSession.role }; // Preserve role from session
       
-      const payload = {
-        id: currentSession.id,
-        name: user.name,
-        phone: user.phone,
-        address: user.location,
-        email: user.email
-      };
-
-      const res = await axios.post('http://localhost:5000/api/users/update-profile', payload);
-      
-      if (res.data.status === 'success') {
-        const updatedUser = { ...currentSession, ...res.data.user };
-        sessionStorage.setItem('user', JSON.stringify(updatedUser));
-        alert('Profile updated successfully!');
-      } else {
-        alert(res.data.message || 'Error updating profile');
-      }
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      alert('Profile updated successfully!');
     } catch (err) {
       console.error('Error saving profile:', err);
-      alert('Failed to save profile. Please try again.');
     }
   };
 

@@ -227,7 +227,6 @@ function OwnerPanel() {
   ];
 
   const [subscribers, setSubscribers] = useState([]);
-  const [selectedSubscribers, setSelectedSubscribers] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [studentsList, setStudentsList] = useState([]);
   const [selectedSub, setSelectedSub] = useState(null);
@@ -270,23 +269,15 @@ function OwnerPanel() {
   useEffect(() => {
     let dailyCost = 0;
     if (newSubData.selectedMeals?.breakfast) {
-      dailyCost += Number((messInfo.tag === 'Veg & Non-Veg' ? messInfo.pricing?.breakfastVeg : messInfo.pricing?.breakfast) || 0);
+      dailyCost += Number(messInfo.pricing?.breakfast || 0);
     }
     if (newSubData.selectedMeals?.lunch?.selected) {
-      if (messInfo.tag === 'Veg & Non-Veg') {
-        const type = newSubData.selectedMeals.lunch.type === 'Non-Veg' ? 'lunchNonVeg' : 'lunchVeg';
-        dailyCost += Number(messInfo.pricing?.[type] || 0);
-      } else {
-        dailyCost += Number(messInfo.pricing?.lunch || 0);
-      }
+      const type = newSubData.selectedMeals.lunch.type === 'Non-Veg' ? 'lunchNonVeg' : 'lunchVeg';
+      dailyCost += Number(messInfo.pricing?.[type] || 0);
     }
     if (newSubData.selectedMeals?.dinner?.selected) {
-      if (messInfo.tag === 'Veg & Non-Veg') {
-        const type = newSubData.selectedMeals.dinner.type === 'Non-Veg' ? 'dinnerNonVeg' : 'dinnerVeg';
-        dailyCost += Number(messInfo.pricing?.[type] || 0);
-      } else {
-        dailyCost += Number(messInfo.pricing?.dinner || 0);
-      }
+      const type = newSubData.selectedMeals.dinner.type === 'Non-Veg' ? 'dinnerNonVeg' : 'dinnerVeg';
+      dailyCost += Number(messInfo.pricing?.[type] || 0);
     }
 
     let days = 30;
@@ -394,64 +385,20 @@ function OwnerPanel() {
     }
   };
 
-  const handleBulkDeleteSubscribers = async () => {
-    if (selectedSubscribers.length === 0) return;
-    if (!window.confirm(`Are you sure you want to permanently delete ${selectedSubscribers.length} subscribers?`)) return;
-    
-    let successCount = 0;
-    try {
-      await Promise.all(selectedSubscribers.map(async (userId) => {
-        try {
-          await axios.delete(`http://localhost:5000/api/admin/users/${userId}`);
-          successCount++;
-        } catch (e) {
-          console.error(`Failed to delete subscriber ${userId}`, e);
-        }
-      }));
-      setSelectedSubscribers([]);
-      fetchSubscribers();
-      alert(`Successfully deleted ${successCount} subscriber(s).`);
-    } catch (error) {
-      alert('Error during bulk delete: ' + error.message);
-    }
-  };
-
-  const [transactions, setTransactions] = useState([]);
-  const [finSearch, setFinSearch] = useState('');
-  const [finStatusFilter, setFinStatusFilter] = useState('All');
-  const [finDateFilter, setFinDateFilter] = useState('All');
-
-  const fetchTransactions = async () => {
-    if (!messInfo.name) return;
-    try {
-      const response = await axios.get(`http://localhost:5000/api/payments/owner?mess_name=${encodeURIComponent(messInfo.name)}`);
-      if (response.data.status === 'success') {
-        const txns = response.data.payments.map(p => {
-          const initials = (p.user_name || 'User').split(' ').map(n => n[0]).join('').toUpperCase();
-          const colors = ['#F26B2E', '#4CAF50', '#2196F3', '#9C27B0', '#FFC107'];
-          const randomColor = colors[Math.floor(Math.random() * colors.length)];
-          return {
-            id: p.id ? `TXN-${p.id.toString().padStart(6, '0')}` : 'N/A',
-            name: p.user_name || 'User',
-            amount: parseFloat(p.amount) || 0,
-            method: 'Online',
-            date: p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB') : 'N/A',
-            status: p.status === 'success' ? 'Paid' : p.status === 'failed' ? 'Failed' : 'Pending',
-            initials,
-            color: randomColor,
-            createdAt: p.created_at
-          };
-        });
-        setTransactions(txns);
-      }
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [messInfo.name]);
+  const transactions = subscribers.map(s => {
+    const initials = s.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    const colors = ['#F26B2E', '#4CAF50', '#2196F3', '#9C27B0', '#FFC107'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    return {
+      id: `TXN-${s.id.toString().padStart(6, '0')}`,
+      name: s.name,
+      amount: s.amount || 0,
+      date: s.startDate,
+      status: 'Paid',
+      initials,
+      color: randomColor
+    };
+  });
 
   const recentActivity = subscribers.slice(0, 5).map(s => ({
     id: s.id,
@@ -487,24 +434,22 @@ function OwnerPanel() {
       total: 0
     };
 
-    transactions.forEach(s => {
-      if (s.status === 'Paid') {
-        const date = new Date(s.createdAt);
-        const amount = parseFloat(s.amount) || 0;
-        stats.total += amount;
+    subscribers.forEach(s => {
+      const date = new Date(s.createdAt);
+      const amount = parseFloat(s.amount) || 0;
+      stats.total += amount;
 
-        if (date >= today) {
-          stats.today += amount;
-          stats.todayCount++;
-        }
-        if (date >= weekAgo) {
-          stats.week += amount;
-          stats.weekCount++;
-        }
-        if (date >= monthAgo) {
-          stats.month += amount;
-          stats.monthCount++;
-        }
+      if (date >= today) {
+        stats.today += amount;
+        stats.todayCount++;
+      }
+      if (date >= weekAgo) {
+        stats.week += amount;
+        stats.weekCount++;
+      }
+      if (date >= monthAgo) {
+        stats.month += amount;
+        stats.monthCount++;
       }
     });
 
@@ -811,7 +756,7 @@ function OwnerPanel() {
         <div className="admin-stat-box-sm">
           <div>
             <div className="stat-label">Today's Revenue</div>
-            <div className="stat-value">₹{earningStats.today.toLocaleString('en-IN')}</div>
+            <div className="stat-value">₹0</div>
           </div>
           <div className="stat-icon-wrap icon-green"><Icon name="dollar-sign" size={20} /></div>
         </div>
@@ -1044,9 +989,7 @@ function OwnerPanel() {
                           style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
                         />
                       ) : (
-                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: messInfo.pricing.breakfastVeg ? '#F26B2E' : '#9E9E9E' }}>
-                          {messInfo.pricing.breakfastVeg ? `₹${messInfo.pricing.breakfastVeg}` : 'Not set'}
-                        </div>
+                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: '#F26B2E' }}>₹{messInfo.pricing.breakfastVeg || 0}</div>
                       )}
                     </div>
                     <div>
@@ -1062,9 +1005,7 @@ function OwnerPanel() {
                           style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
                         />
                       ) : (
-                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: messInfo.pricing.breakfastNonVeg ? '#F26B2E' : '#9E9E9E' }}>
-                          {messInfo.pricing.breakfastNonVeg ? `₹${messInfo.pricing.breakfastNonVeg}` : 'Not set'}
-                        </div>
+                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: '#F26B2E' }}>₹{messInfo.pricing.breakfastNonVeg || 0}</div>
                       )}
                     </div>
                   </div>
@@ -1082,9 +1023,7 @@ function OwnerPanel() {
                         style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
                       />
                     ) : (
-                      <div className="info-value" style={{ fontSize: 16, fontWeight: 700, color: messInfo.pricing.breakfast ? '#F26B2E' : '#9E9E9E' }}>
-                        {messInfo.pricing.breakfast ? `₹${messInfo.pricing.breakfast}` : 'Not set'}
-                      </div>
+                      <div className="info-value" style={{ fontSize: 16, fontWeight: 700, color: '#F26B2E' }}>₹{messInfo.pricing.breakfast}</div>
                     )}
                   </div>
                 )}
@@ -1095,8 +1034,8 @@ function OwnerPanel() {
                 <div style={{ fontWeight: 700, marginBottom: 16, color: '#1A1A1A', display: 'flex', alignItems: 'center', gap: 8 }}>
                   Lunch
                 </div>
-                {(isEditingProfile ? editOwnerData.tag : messInfo.tag) === 'Veg & Non-Veg' ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: (isEditingProfile ? editOwnerData.tag : messInfo.tag) === 'Veg & Non-Veg' ? '1fr 1fr' : '1fr', gap: 12 }}>
+                  {(isEditingProfile ? editOwnerData.tag : messInfo.tag) !== 'Non-Veg' && (
                     <div>
                       <div className="info-label">Veg (₹)</div>
                       {isEditingProfile ? (
@@ -1110,11 +1049,11 @@ function OwnerPanel() {
                           style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
                         />
                       ) : (
-                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: messInfo.pricing.lunchVeg ? '#F26B2E' : '#9E9E9E' }}>
-                          {messInfo.pricing.lunchVeg ? `₹${messInfo.pricing.lunchVeg}` : 'Not set'}
-                        </div>
+                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: '#F26B2E' }}>₹{messInfo.pricing.lunchVeg}</div>
                       )}
                     </div>
+                  )}
+                  {(isEditingProfile ? editOwnerData.tag : messInfo.tag) !== 'Veg' && (
                     <div>
                       <div className="info-label">Non-Veg (₹)</div>
                       {isEditingProfile ? (
@@ -1128,32 +1067,11 @@ function OwnerPanel() {
                           style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
                         />
                       ) : (
-                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: messInfo.pricing.lunchNonVeg ? '#F26B2E' : '#9E9E9E' }}>
-                          {messInfo.pricing.lunchNonVeg ? `₹${messInfo.pricing.lunchNonVeg}` : 'Not set'}
-                        </div>
+                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: '#F26B2E' }}>₹{messInfo.pricing.lunchNonVeg}</div>
                       )}
                     </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="info-label">Price (₹)</div>
-                    {isEditingProfile ? (
-                      <input 
-                        type="number" 
-                        value={editOwnerData.pricing.lunch} 
-                        onChange={e => setEditOwnerData({ 
-                          ...editOwnerData, 
-                          pricing: { ...editOwnerData.pricing, lunch: parseInt(e.target.value) || 0 } 
-                        })}
-                        style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
-                      />
-                    ) : (
-                      <div className="info-value" style={{ fontSize: 16, fontWeight: 700, color: messInfo.pricing.lunch ? '#F26B2E' : '#9E9E9E' }}>
-                        {messInfo.pricing.lunch ? `₹${messInfo.pricing.lunch}` : 'Not set'}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Dinner Pricing */}
@@ -1161,8 +1079,8 @@ function OwnerPanel() {
                 <div style={{ fontWeight: 700, marginBottom: 16, color: '#1A1A1A', display: 'flex', alignItems: 'center', gap: 8 }}>
                   Dinner
                 </div>
-                {(isEditingProfile ? editOwnerData.tag : messInfo.tag) === 'Veg & Non-Veg' ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: (isEditingProfile ? editOwnerData.tag : messInfo.tag) === 'Veg & Non-Veg' ? '1fr 1fr' : '1fr', gap: 12 }}>
+                  {(isEditingProfile ? editOwnerData.tag : messInfo.tag) !== 'Non-Veg' && (
                     <div>
                       <div className="info-label">Veg (₹)</div>
                       {isEditingProfile ? (
@@ -1176,11 +1094,11 @@ function OwnerPanel() {
                           style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
                         />
                       ) : (
-                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: messInfo.pricing.dinnerVeg ? '#F26B2E' : '#9E9E9E' }}>
-                          {messInfo.pricing.dinnerVeg ? `₹${messInfo.pricing.dinnerVeg}` : 'Not set'}
-                        </div>
+                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: '#F26B2E' }}>₹{messInfo.pricing.dinnerVeg}</div>
                       )}
                     </div>
+                  )}
+                  {(isEditingProfile ? editOwnerData.tag : messInfo.tag) !== 'Veg' && (
                     <div>
                       <div className="info-label">Non-Veg (₹)</div>
                       {isEditingProfile ? (
@@ -1194,32 +1112,11 @@ function OwnerPanel() {
                           style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
                         />
                       ) : (
-                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: messInfo.pricing.dinnerNonVeg ? '#F26B2E' : '#9E9E9E' }}>
-                          {messInfo.pricing.dinnerNonVeg ? `₹${messInfo.pricing.dinnerNonVeg}` : 'Not set'}
-                        </div>
+                        <div className="info-value" style={{ fontSize: 15, fontWeight: 700, color: '#F26B2E' }}>₹{messInfo.pricing.dinnerNonVeg}</div>
                       )}
                     </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="info-label">Price (₹)</div>
-                    {isEditingProfile ? (
-                      <input 
-                        type="number" 
-                        value={editOwnerData.pricing.dinner} 
-                        onChange={e => setEditOwnerData({ 
-                          ...editOwnerData, 
-                          pricing: { ...editOwnerData.pricing, dinner: parseInt(e.target.value) || 0 } 
-                        })}
-                        style={{ fontSize: 14, border: '1px solid #DDD', borderRadius: 6, padding: '6px 10px', width: '100%', marginTop: 4 }}
-                      />
-                    ) : (
-                      <div className="info-value" style={{ fontSize: 16, fontWeight: 700, color: messInfo.pricing.dinner ? '#F26B2E' : '#9E9E9E' }}>
-                        {messInfo.pricing.dinner ? `₹${messInfo.pricing.dinner}` : 'Not set'}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1585,14 +1482,6 @@ function OwnerPanel() {
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
           </div>
-          {selectedSubscribers.length > 0 && (
-            <button 
-              className="btn-sm" 
-              onClick={handleBulkDeleteSubscribers}
-              style={{ background: '#FFEBEE', color: '#D32F2F', border: '1px solid #FFCDD2', padding: '8px 16px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
-              Delete Selected ({selectedSubscribers.length})
-            </button>
-          )}
         </div>
       </div>
 
@@ -1600,17 +1489,6 @@ function OwnerPanel() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th style={{ width: '40px' }}>
-                <input 
-                  type="checkbox" 
-                  onChange={(e) => {
-                    const filtered = subscribers.filter(s => statusFilter === 'All' || s.status.toLowerCase() === statusFilter.toLowerCase());
-                    if (e.target.checked) setSelectedSubscribers(filtered.map(s => s.userId));
-                    else setSelectedSubscribers([]);
-                  }}
-                  checked={subscribers.filter(s => statusFilter === 'All' || s.status.toLowerCase() === statusFilter.toLowerCase()).length > 0 && selectedSubscribers.length === subscribers.filter(s => statusFilter === 'All' || s.status.toLowerCase() === statusFilter.toLowerCase()).length}
-                />
-              </th>
               <th>Name</th>
               <th>Phone number</th>
               <th>Plan</th>
@@ -1627,16 +1505,6 @@ function OwnerPanel() {
               .filter(s => statusFilter === 'All' || s.status.toLowerCase() === statusFilter.toLowerCase())
               .map(sub => (
               <tr key={sub.id}>
-                <td>
-                  <input 
-                    type="checkbox" 
-                    checked={selectedSubscribers.includes(sub.userId)}
-                    onChange={(e) => {
-                      if (e.target.checked) setSelectedSubscribers([...selectedSubscribers, sub.userId]);
-                      else setSelectedSubscribers(selectedSubscribers.filter(id => id !== sub.userId));
-                    }}
-                  />
-                </td>
                 <td>
                   <div style={{ fontWeight: 700, color: '#1A1A1A' }}>{sub.name}</div>
                   <div style={{ fontSize: 11, color: '#7E7E7E' }}>{sub.meals}</div>
@@ -1735,27 +1603,6 @@ function OwnerPanel() {
   );
 
   const renderPayments = () => {
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-
-    const filteredTransactions = transactions.filter(tx => {
-      const q = finSearch.toLowerCase();
-      const userStr = (tx.name || '').toLowerCase();
-      const idStr = (tx.id || '').toLowerCase();
-      const matchQ = !q || idStr.includes(q) || userStr.includes(q);
-      const matchStatus = finStatusFilter === 'All' || tx.status === finStatusFilter;
-      let matchDate = true;
-      if (finDateFilter !== 'All' && tx.createdAt) {
-        const txDate = new Date(tx.createdAt);
-        if (finDateFilter === 'This Week') matchDate = txDate >= weekAgo;
-        else if (finDateFilter === 'This Month') matchDate = txDate >= monthAgo;
-        else if (finDateFilter === 'Last 3 Months') matchDate = txDate >= threeMonthsAgo;
-      }
-      return matchQ && matchStatus && matchDate;
-    });
-
     return (
       <div className="owner-view">
         <div className="owner-header-row">
@@ -1768,32 +1615,27 @@ function OwnerPanel() {
         <div className="admin-stats-grid">
           <div className="admin-stat-box">
             <div className="stat-label">Today</div>
-            <div className="stat-value">₹{earningStats.today.toLocaleString('en-IN')}</div>
-            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>{earningStats.todayCount} transactions today</div>
+            <div className="stat-value">₹0</div>
+            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>0 transactions today</div>
           </div>
           <div className="admin-stat-box">
             <div className="stat-label">This week</div>
-            <div className="stat-value">₹{earningStats.week.toLocaleString('en-IN')}</div>
-            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>{earningStats.weekCount} transactions</div>
+            <div className="stat-value">₹0</div>
+            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>0 transactions</div>
           </div>
           <div className="admin-stat-box">
             <div className="stat-label">This month</div>
-            <div className="stat-value">₹{earningStats.month.toLocaleString('en-IN')}</div>
-            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>{earningStats.monthCount} transactions</div>
-          </div>
-          <div className="admin-stat-box" style={{ border: '2px solid #F26B2E' }}>
-            <div className="stat-label" style={{ color: '#F26B2E' }}>Total Earned</div>
-            <div className="stat-value" style={{ color: '#F26B2E' }}>₹{earningStats.total.toLocaleString('en-IN')}</div>
-            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>{transactions.filter(t => t.status === 'Paid').length} paid transactions</div>
+            <div className="stat-value">₹0</div>
+            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>0 transactions</div>
           </div>
         </div>
 
         <div className="owner-section-title">
-          <div>
-            <h2>Transactions</h2>
-            <p className="table-subtitle">Showing {filteredTransactions.length} of {transactions.length} records</p>
-          </div>
+          <h2>Transactions</h2>
           <div style={{ display: 'flex', gap: 12 }}>
+            <select className="owner-select">
+              <option>Last 30 days</option>
+            </select>
             <button className="owner-export-btn">
               <Icon name="download" size={14} /> Export
             </button>
@@ -1801,72 +1643,22 @@ function OwnerPanel() {
         </div>
 
         <div className="admin-table-panel">
-          <div className="table-toolbar" style={{ flexWrap: 'wrap', gap: 12, padding: '20px 24px', borderBottom: '1px solid #EAEAEA' }}>
-            <div className="search-input-wrap" style={{ width: 280 }}>
-              <span style={{ opacity: 0.4 }}>🔍</span>
-              <input
-                type="text"
-                placeholder="Search by ID or user name..."
-                value={finSearch}
-                onChange={e => setFinSearch(e.target.value)}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <select className="filter-select" value={finStatusFilter} onChange={e => setFinStatusFilter(e.target.value)}>
-                <option value="All">All Status</option>
-                <option>Paid</option>
-                <option>Pending</option>
-                <option>Failed</option>
-              </select>
-              <select className="filter-select" value={finDateFilter} onChange={e => setFinDateFilter(e.target.value)}>
-                <option value="All">All Dates</option>
-                <option>This Week</option>
-                <option>This Month</option>
-                <option>Last 3 Months</option>
-              </select>
-            </div>
-          </div>
           <table className="admin-table">
             <thead>
               <tr>
                 <th>Transaction ID</th>
-                <th>User</th>
+                <th>Name</th>
                 <th>Amount</th>
-                <th>Method</th>
-                <th>Payment Status</th>
                 <th>Date</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {filteredTransactions.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>
-                    No transactions found.
-                  </td>
-                </tr>
-              ) : (
-                filteredTransactions.map(tx => (
-                  <tr key={tx.id}>
-                    <td style={{ fontWeight: 600, color: '#F26B2E', fontFamily: 'monospace', fontSize: 13 }}>{tx.id}</td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: tx.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
-                          {tx.initials}
-                        </div>
-                        <span style={{ fontSize: 13, fontWeight: 500 }}>{tx.name}</span>
-                      </div>
-                    </td>
-                    <td style={{ fontWeight: 700, color: '#1A1A1A' }}>₹{tx.amount.toLocaleString('en-IN')}</td>
-                    <td style={{ color: '#7E7E7E', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Icon name="credit-card" size={14} /> {tx.method}
-                    </td>
-                    <td>
-                      {tx.status === 'Paid' ? <span className="fin-pill fin-paid">✓ Paid</span> : tx.status === 'Pending' ? <span className="fin-pill fin-pending">⏳ Pending</span> : <span className="fin-pill fin-failed">✕ Failed</span>}
-                    </td>
-                    <td style={{ color: '#9E9E9E', fontSize: 13 }}>{tx.date}</td>
-                  </tr>
-                ))
-              )}
+              <tr>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>
+                  No transactions found.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -2165,7 +1957,7 @@ function OwnerPanel() {
                     <label style={{ display: 'flex', alignItems: 'center', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
                       <input type="checkbox" checked={newSubData.selectedMeals.breakfast} readOnly style={{ marginRight: '8px', accentColor: 'var(--orange)' }} /> Breakfast
                     </label>
-                    <span style={{ color: '#F26B2E', fontSize: '12px', fontWeight: '600' }}>₹{messInfo.tag === 'Veg & Non-Veg' ? messInfo.pricing?.breakfastVeg : messInfo.pricing?.breakfast}/day</span>
+                    <span style={{ color: '#F26B2E', fontSize: '12px', fontWeight: '600' }}>₹{messInfo.pricing?.breakfast}/day</span>
                   </div>
 
                   {/* Lunch Box */}
@@ -2183,7 +1975,7 @@ function OwnerPanel() {
                         <input type="checkbox" checked={newSubData.selectedMeals.lunch.selected} readOnly style={{ marginRight: '8px', accentColor: 'var(--orange)' }} /> Lunch
                       </label>
                       <span style={{ color: '#F26B2E', fontSize: '12px', fontWeight: '600' }}>
-                        ₹{messInfo.tag === 'Veg & Non-Veg' ? (newSubData.selectedMeals.lunch.type === 'Non-Veg' ? messInfo.pricing?.lunchNonVeg : messInfo.pricing?.lunchVeg) : messInfo.pricing?.lunch}/day
+                        ₹{newSubData.selectedMeals.lunch.type === 'Non-Veg' ? messInfo.pricing?.lunchNonVeg : messInfo.pricing?.lunchVeg}/day
                       </span>
                     </div>
                     {newSubData.selectedMeals.lunch.selected && messInfo.tag === 'Veg & Non-Veg' && (
@@ -2219,7 +2011,7 @@ function OwnerPanel() {
                         <input type="checkbox" checked={newSubData.selectedMeals.dinner.selected} readOnly style={{ marginRight: '8px', accentColor: 'var(--orange)' }} /> Dinner
                       </label>
                       <span style={{ color: '#F26B2E', fontSize: '12px', fontWeight: '600' }}>
-                        ₹{messInfo.tag === 'Veg & Non-Veg' ? (newSubData.selectedMeals.dinner.type === 'Non-Veg' ? messInfo.pricing?.dinnerNonVeg : messInfo.pricing?.dinnerVeg) : messInfo.pricing?.dinner}/day
+                        ₹{newSubData.selectedMeals.dinner.type === 'Non-Veg' ? messInfo.pricing?.dinnerNonVeg : messInfo.pricing?.dinnerVeg}/day
                       </span>
                     </div>
                     {newSubData.selectedMeals.dinner.selected && messInfo.tag === 'Veg & Non-Veg' && (

@@ -175,18 +175,6 @@ function MessDetail() {
     localStorage.setItem('savedMesses', JSON.stringify(updated));
   };
 
-  if (isLoading) {
-    return (
-      <div className="home-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <NavBar />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid var(--orange)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
   if (!mess) {
     return (
       <div className="home-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -218,20 +206,8 @@ function MessDetail() {
         cost += (mess.pricing.breakfast || 0);
       }
     }
-    if (selectedMeals.lunch.selected) {
-      if (mess.tag === 'Veg & Non-Veg') {
-        cost += (mess.pricing[`lunch${selectedMeals.lunch.type}`] || 0);
-      } else {
-        cost += (mess.pricing.lunch || 0);
-      }
-    }
-    if (selectedMeals.dinner.selected) {
-      if (mess.tag === 'Veg & Non-Veg') {
-        cost += (mess.pricing[`dinner${selectedMeals.dinner.type}`] || 0);
-      } else {
-        cost += (mess.pricing.dinner || 0);
-      }
-    }
+    if (selectedMeals.lunch.selected) cost += (mess.pricing[`lunch${selectedMeals.lunch.type}`] || 0);
+    if (selectedMeals.dinner.selected) cost += (mess.pricing[`dinner${selectedMeals.dinner.type}`] || 0);
     return cost;
   };
 
@@ -436,14 +412,6 @@ function MessDetail() {
             {/* Student Reviews Section */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: '700' }}>Student Reviews</h2>
-              {reviewsList.length > 3 && (
-                <button 
-                  onClick={() => setShowAllReviews(!showAllReviews)}
-                  style={{ background: 'none', border: 'none', color: '#F26B2E', fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  {showAllReviews ? 'Show Less' : 'View All'}
-                </button>
-              )}
             </div>
             
             {reviewsList.length === 0 ? (
@@ -454,7 +422,7 @@ function MessDetail() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {(showAllReviews ? reviewsList : reviewsList.slice(0, 3)).map(review => (
+                {reviewsList.map(review => (
                   <div key={review.id} className="info-widget" style={{ padding: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -511,7 +479,7 @@ function MessDetail() {
                     <label style={{ display: 'flex', alignItems: 'center', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
                       <input type="checkbox" checked={selectedMeals.lunch.selected} onChange={() => toggleMeal('lunch')} /> Lunch
                     </label>
-                    <span style={{ color: '#F26B2E', fontSize: '12px', background: '#FFF0E6', padding: '2px 8px', borderRadius: '12px' }}>₹{mess.tag === 'Veg & Non-Veg' ? (mess.pricing[`lunch${selectedMeals.lunch.type}`] || 0) : (mess.pricing.lunch || 0)}/day</span>
+                    <span style={{ color: '#F26B2E', fontSize: '12px', background: '#FFF0E6', padding: '2px 8px', borderRadius: '12px' }}>₹{mess.pricing[`lunch${selectedMeals.lunch.type}`] || 0}/day</span>
                   </div>
                   {selectedMeals.lunch.selected && (mess.tag.toUpperCase() === 'VEG & NON-VEG') && (
                     <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingLeft: '24px' }}>
@@ -531,7 +499,7 @@ function MessDetail() {
                     <label style={{ display: 'flex', alignItems: 'center', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
                       <input type="checkbox" checked={selectedMeals.dinner.selected} onChange={() => toggleMeal('dinner')} /> Dinner
                     </label>
-                    <span style={{ color: '#F26B2E', fontSize: '12px', background: '#FFF0E6', padding: '2px 8px', borderRadius: '12px' }}>₹{mess.tag === 'Veg & Non-Veg' ? (mess.pricing[`dinner${selectedMeals.dinner.type}`] || 0) : (mess.pricing.dinner || 0)}/day</span>
+                    <span style={{ color: '#F26B2E', fontSize: '12px', background: '#FFF0E6', padding: '2px 8px', borderRadius: '12px' }}>₹{mess.pricing[`dinner${selectedMeals.dinner.type}`] || 0}/day</span>
                   </div>
                   {selectedMeals.dinner.selected && (mess.tag.toUpperCase() === 'VEG & NON-VEG') && (
                     <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingLeft: '24px' }}>
@@ -581,7 +549,7 @@ function MessDetail() {
               <div className="price-summary-box">
                 <h3 style={{ fontSize: '13px', color: '#1A1A1A', fontWeight: '700', marginBottom: '12px' }}>Price Summary</h3>
                 <div className="summary-row">
-                  <span>Selected Meals ({[selectedMeals.breakfast?.selected && `B(${selectedMeals.breakfast.type})`, selectedMeals.lunch?.selected && `L(${selectedMeals.lunch.type})`, selectedMeals.dinner?.selected && `D(${selectedMeals.dinner.type})`].filter(Boolean).join(', ')})</span>
+                  <span>Selected Meals ({[selectedMeals.breakfast && 'B', selectedMeals.lunch.selected && `L(${selectedMeals.lunch.type})`, selectedMeals.dinner.selected && `D(${selectedMeals.dinner.type})`].filter(Boolean).join(', ')})</span>
                   <span>{duration}</span>
                 </div>
                 {homeDelivery && (

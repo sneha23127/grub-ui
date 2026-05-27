@@ -15,7 +15,7 @@ function Payment() {
     homeDelivery: false,
     paymentOptions: { upi: true, cash: true },
     selectedMeals: {
-      breakfast: { selected: false, type: 'Veg' },
+      breakfast: false,
       lunch: { selected: false, type: 'Veg' },
       dinner: { selected: false, type: 'Veg' }
     }
@@ -33,7 +33,7 @@ function Payment() {
         homeDelivery: location.state.homeDelivery || false,
         paymentOptions: location.state.paymentOptions || { upi: true, cash: true },
         selectedMeals: location.state.selectedMeals || {
-          breakfast: { selected: false, type: 'Veg' },
+          breakfast: false,
           lunch: { selected: false, type: 'Veg' },
           dinner: { selected: false, type: 'Veg' }
         }
@@ -208,18 +208,11 @@ function Payment() {
   const getMealBreakdown = () => {
     const meals = [];
     const sm = paymentData.selectedMeals;
-    
-    const isSelected = (meal) => meal && (meal.selected === true || meal === true);
-    const getTypeStr = (meal) => {
-      if (meal && meal.type === 'NonVeg') return ' (Non-Veg)';
-      if (meal && meal.type === 'Veg') return ' (Veg)';
-      return '';
-    };
-    
-    if (isSelected(sm?.breakfast)) meals.push(`Breakfast${getTypeStr(sm?.breakfast)}`);
-    if (isSelected(sm?.lunch)) meals.push(`Lunch${getTypeStr(sm?.lunch)}`);
-    if (isSelected(sm?.dinner)) meals.push(`Dinner${getTypeStr(sm?.dinner)}`);
-    
+    // Check if we need to show the type (only if mess is Veg & Non-Veg)
+    // For now, let's just make it concise.
+    if (sm?.breakfast) meals.push('Breakfast');
+    if (sm?.lunch?.selected) meals.push(`Lunch${sm.lunch.type === 'NonVeg' ? ' (Non-Veg)' : ''}`);
+    if (sm?.dinner?.selected) meals.push(`Dinner${sm.dinner.type === 'NonVeg' ? ' (Non-Veg)' : ''}`);
     return meals.length > 0 ? meals.join(', ') : 'No meals selected';
   };
 

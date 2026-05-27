@@ -48,22 +48,15 @@ function Subscriptions() {
             name: sub.mess_name,
             cuisine: sub.cuisine_type || 'Indian',
             diet: sub.meal_preference || 'Veg/Non-Veg',
-            meals: sub.meals ? sub.meals.split(',').map(m => {
-              let mealStr = m.trim();
-              if (mealStr && !mealStr.includes('(Veg)') && !mealStr.includes('(Non-Veg)')) {
-                return `${mealStr} (Veg)`;
-              }
-              return mealStr;
-            }).join(', ') : '',
+            meals: sub.meals,
             delivery: sub.delivery_type,
-            dateLabel: sub.status === 'ACTIVE' ? 'Renews' : sub.status === 'CANCELLED' ? 'Cancelled' : 'Expired',
+            dateLabel: sub.status === 'ACTIVE' ? 'Renews' : 'Expired',
             dateVal: new Date(sub.expiry_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
             statusType: sub.status,
             messId: sub.owner_id,
             image: `https://placehold.co/150x150/F26B2E/FFFFFF?text=${sub.mess_name.charAt(0)}`,
             pauseStart: sub.pause_start_date ? new Date(sub.pause_start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
-            pauseEnd: sub.pause_end_date ? new Date(sub.pause_end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
-            rawDb: sub
+            pauseEnd: sub.pause_end_date ? new Date(sub.pause_end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
           }));
 
           const active = mappedSubs.filter(s => s.statusType === 'ACTIVE');
@@ -101,43 +94,6 @@ function Subscriptions() {
   }, [pastList, userId]);
 
   // Action Handlers
-  const handleResubscribe = (sub) => {
-    const raw = sub.rawDb;
-    
-    // Parse selectedMeals
-    const sm = {
-      breakfast: { selected: false, type: 'Veg' },
-      lunch: { selected: false, type: 'Veg' },
-      dinner: { selected: false, type: 'Veg' }
-    };
-    if (raw.meals) {
-      if (raw.meals.includes('Breakfast')) {
-        sm.breakfast.selected = true;
-        if (raw.meals.includes('Breakfast (Non-Veg)')) sm.breakfast.type = 'NonVeg';
-      }
-      if (raw.meals.includes('Lunch')) {
-        sm.lunch.selected = true;
-        if (raw.meals.includes('Lunch (Non-Veg)')) sm.lunch.type = 'NonVeg';
-      }
-      if (raw.meals.includes('Dinner')) {
-        sm.dinner.selected = true;
-        if (raw.meals.includes('Dinner (Non-Veg)')) sm.dinner.type = 'NonVeg';
-      }
-    }
-
-    navigate('/payment', { 
-      state: { 
-        messName: raw.mess_name, 
-        messId: raw.owner_id,
-        totalAmount: raw.total_amount,
-        selectedPlan: raw.plan_duration,
-        selectedMeals: sm,
-        homeDelivery: raw.delivery_type === 'Home Delivery',
-        paymentOptions: { upi: true, cash: true }
-      } 
-    });
-  };
-
   const handleUpdateStatus = async (id, newStatus, extraData = {}) => {
     try {
       const response = await fetch(`http://localhost:5000/api/subscriptions/${id}/status`, {
@@ -235,11 +191,7 @@ function Subscriptions() {
       setRating(0);
     } catch (error) {
       console.error('Feedback error:', error);
-      if (error.response && error.response.data && error.response.data.message) {
-        alert(error.response.data.message);
-      } else {
-        alert('Failed to submit. Please try again.');
-      }
+      alert('Failed to submit. Please try again.');
     } finally {
       setIsSubmittingFeedback(false);
     }
@@ -255,9 +207,6 @@ function Subscriptions() {
       return <span className="pill-active">ACTIVE</span>;
     }
     if (statusType === 'EXPIRED') {
-      return <span className="pill-expired">EXPIRED</span>;
-    }
-    if (statusType === 'CANCELLED') {
       return <span className="pill-expired">CANCELLED</span>;
     }
     if (statusType === 'PAUSED') {
@@ -385,33 +334,15 @@ function Subscriptions() {
             <div className="subs-card-meta" style={{ color: '#7E7E7E' }}>
               {sub.dateLabel} {sub.dateVal}
             </div>
+            <a href="#review" style={{ display: 'inline-block', marginTop: '4px', fontSize: '13px', color: '#F26B2E', textDecoration: 'underline' }}>
+              Write a review →
+            </a>
           </div>
           <div className="subs-card-actions">
-            {(() => {
-              const isAlreadyActive = activeList.some(
-                a => a.name.toLowerCase() === sub.name.toLowerCase()
-              );
-              const isAlreadyPaused = pausedList.some(
-                p => p.name.toLowerCase() === sub.name.toLowerCase()
-              );
-              const blocked = isAlreadyActive || isAlreadyPaused;
-              const blockedLabel = isAlreadyActive ? 'Already Active' : 'Already Paused';
-
-              return (
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <button
-                    className="btn-action-solid"
-                    onClick={() => !blocked && handleResubscribe(sub)}
-                    disabled={blocked}
-                    title={blocked ? `You already have a ${blockedLabel.toLowerCase()} subscription for this mess.` : ''}
-                    style={blocked ? { background: '#E0E0E0', color: '#9E9E9E', border: '1px solid #CCC', cursor: 'not-allowed', opacity: 0.75 } : {}}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12A10 10 0 1 1 12 2v4a6 6 0 1 0 6 6z"></path><polyline points="22 2 22 12 12 12"></polyline></svg>
-                    {blocked ? blockedLabel : 'Resubscribe'}
-                  </button>
-                </div>
-              );
-            })()}
+            <button className="btn-action-solid">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12A10 10 0 1 1 12 2v4a6 6 0 1 0 6 6z"></path><polyline points="22 2 22 12 12 12"></polyline></svg>
+              Resubscribe
+            </button>
           </div>
         </div>
       ))}
@@ -516,12 +447,9 @@ function Subscriptions() {
                 <button className="btn-action-outline" style={{ flex: 1 }} onClick={() => setFeedbackTarget(null)}>Cancel</button>
                 <button
                   className="btn-action-solid"
-                  style={{ 
-                    flex: 2, 
-                    background: (isSubmittingFeedback || (feedbackType === 'review' && (!reviewMsg.trim() || rating === 0)) || (feedbackType === 'complaint' && (!complaintMsg.trim() || !feedbackSubject.trim()))) ? '#CCC' : 'var(--orange)' 
-                  }}
+                  style={{ flex: 2, background: isSubmittingFeedback || !(feedbackType === 'review' ? reviewMsg : complaintMsg).trim() || (feedbackType === 'review' && rating === 0) ? '#CCC' : 'var(--orange)' }}
                   onClick={handleSubmitFeedback}
-                  disabled={isSubmittingFeedback || (feedbackType === 'review' && (!reviewMsg.trim() || rating === 0)) || (feedbackType === 'complaint' && (!complaintMsg.trim() || !feedbackSubject.trim()))}
+                  disabled={isSubmittingFeedback || !(feedbackType === 'review' ? reviewMsg : complaintMsg).trim() || (feedbackType === 'review' && rating === 0)}
                 >
                   {isSubmittingFeedback ? 'Submitting...' : `Submit ${feedbackType === 'review' ? 'Review' : 'Complaint'}`}
                 </button>

@@ -22,9 +22,7 @@ function AdminPanel() {
 
   // Real Data from Backend
   const [messesList, setMessesList] = useState([]);
-  const [selectedMesses, setSelectedMesses] = useState([]);
   const [usersList, setUsersList] = useState([]);
-  const [selectedUsers, setSelectedUsers] = useState([]);
   const [ticketsList, setTicketsList] = useState([]);
   const [subscriptionsList, setSubscriptionsList] = useState([]);
   const [selectedMessReviews, setSelectedMessReviews] = useState([]);
@@ -56,12 +54,11 @@ function AdminPanel() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [messesRes, usersRes, ticketsRes, subsRes, paymentsRes] = await Promise.all([
+      const [messesRes, usersRes, ticketsRes, subsRes] = await Promise.all([
         axios.get('http://localhost:5000/api/admin/messes'),
         axios.get('http://localhost:5000/api/admin/users'),
         axios.get('http://localhost:5000/api/admin/tickets'),
-        axios.get('http://localhost:5000/api/admin/subscriptions'),
-        axios.get('http://localhost:5000/api/payments')
+        axios.get('http://localhost:5000/api/admin/subscriptions')
       ]);
 
       if (messesRes.data && messesRes.data.status === 'success' && Array.isArray(messesRes.data.messes)) {
@@ -118,19 +115,6 @@ function AdminPanel() {
       if (subsRes.data && subsRes.data.status === 'success' && Array.isArray(subsRes.data.subscriptions)) {
         setSubscriptionsList(subsRes.data.subscriptions);
       }
-
-      if (paymentsRes.data && paymentsRes.data.status === 'success' && Array.isArray(paymentsRes.data.payments)) {
-        setTransactionsList(paymentsRes.data.payments.map(p => ({
-          id: p.id ? `TXN-${p.id.toString().padStart(6, '0')}` : 'N/A',
-          mess: p.mess_name || '',
-          user: p.user_name || 'User',
-          amount: parseFloat(p.amount) || 0,
-          method: 'Online',
-          status: p.status === 'success' ? 'Paid' : p.status === 'failed' ? 'Failed' : 'Pending',
-          date: p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A',
-          rawDate: p.created_at
-        })));
-      }
     } catch (error) {
       console.error('Error fetching admin data:', error);
     } finally {
@@ -159,57 +143,6 @@ function AdminPanel() {
       }
     } catch (error) {
       alert('Error updating status: ' + error.message);
-    }
-  };
-
-  const handleBulkMessBlock = async () => {
-    if (selectedMesses.length === 0) return;
-    if (!window.confirm(`Are you sure you want to block ${selectedMesses.length} messes?`)) return;
-    
-    setIsLoading(true);
-    let successCount = 0;
-    try {
-      await Promise.all(selectedMesses.map(async (messId) => {
-        try {
-          await axios.post('http://localhost:5000/api/admin/update-status', { id: messId, status: 'Blocked' });
-          successCount++;
-        } catch (e) {
-          console.error(`Failed to block mess ${messId}`, e);
-        }
-      }));
-      setMessesList(prev => prev.map(m => selectedMesses.includes(m.id) ? { ...m, status: 'Blocked' } : m));
-      setSelectedMesses([]);
-      alert(`Successfully blocked ${successCount} mess(es).`);
-    } catch (error) {
-      alert('Error during bulk block: ' + error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBulkMessDelete = async () => {
-    if (selectedMesses.length === 0) return;
-    if (!window.confirm(`Are you sure you want to permanently delete ${selectedMesses.length} messes and their users?`)) return;
-    
-    setIsLoading(true);
-    let successCount = 0;
-    try {
-      await Promise.all(selectedMesses.map(async (messId) => {
-        try {
-          await axios.delete(`http://localhost:5000/api/admin/users/${messId}`);
-          successCount++;
-        } catch (e) {
-          console.error(`Failed to delete mess ${messId}`, e);
-        }
-      }));
-      setMessesList(prev => prev.filter(m => !selectedMesses.includes(m.id)));
-      setUsersList(prev => prev.filter(u => !selectedMesses.includes(u.id)));
-      setSelectedMesses([]);
-      alert(`Successfully deleted ${successCount} mess(es).`);
-    } catch (error) {
-      alert('Error during bulk delete: ' + error.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -332,36 +265,6 @@ function AdminPanel() {
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedUsers.length === 0) return;
-    if (!window.confirm(`Are you sure you want to permanently delete ${selectedUsers.length} users?`)) {
-      return;
-    }
-    
-    setIsLoading(true);
-    let successCount = 0;
-    
-    try {
-      await Promise.all(selectedUsers.map(async (userId) => {
-        try {
-          await axios.delete(`http://localhost:5000/api/admin/users/${userId}`);
-          successCount++;
-        } catch (e) {
-          console.error(`Failed to delete user ${userId}`, e);
-        }
-      }));
-      
-      setUsersList(prev => prev.filter(u => !selectedUsers.includes(u.id)));
-      setMessesList(prev => prev.filter(m => !selectedUsers.includes(m.id)));
-      setSelectedUsers([]);
-      alert(`Successfully deleted ${successCount} user(s).`);
-    } catch (error) {
-      alert('Error during bulk deletion: ' + error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
 
   const handleUpdateTicketStatus = async (ticketId, newStatus) => {
     try {
@@ -399,7 +302,10 @@ function AdminPanel() {
   const [finMessFilter, setFinMessFilter] = useState('All');
   const [finStatusFilter, setFinStatusFilter] = useState('All');
   const [selectedTx, setSelectedTx] = useState(null);
-  const [transactionsList, setTransactionsList] = useState([]);
+
+
+
+  const mockTransactions = [];
 
   const revenueData = [];
   const paymentBreakdown = [];
@@ -708,36 +614,10 @@ function AdminPanel() {
             <option>Inactive</option>
             <option>Blocked</option>
           </select>
-          {selectedMesses.length > 0 && (
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button 
-                className="btn-sm" 
-                onClick={handleBulkMessBlock}
-                style={{ background: '#FFF3E0', color: '#E65100', border: '1px solid #FFE0B2', padding: '0 16px' }}>
-                Block Selected
-              </button>
-              <button 
-                className="btn-sm" 
-                onClick={handleBulkMessDelete}
-                style={{ background: '#FFEBEE', color: '#D32F2F', border: '1px solid #FFCDD2', padding: '0 16px' }}>
-                Delete Selected
-              </button>
-            </div>
-          )}
         </div>
         <table className="admin-table">
           <thead>
             <tr>
-              <th style={{ width: '40px' }}>
-                <input 
-                  type="checkbox" 
-                  onChange={(e) => {
-                    if (e.target.checked) setSelectedMesses(filtered.map(m => m.id));
-                    else setSelectedMesses([]);
-                  }}
-                  checked={filtered.length > 0 && selectedMesses.length === filtered.length}
-                />
-              </th>
               <th>Mess Name</th>
               <th>Owner</th>
               <th>Location</th>
@@ -749,19 +629,9 @@ function AdminPanel() {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>No messes match your search.</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>No messes match your search.</td></tr>
             ) : filtered.map(mess => (
               <tr key={mess.id}>
-                <td>
-                  <input 
-                    type="checkbox" 
-                    checked={selectedMesses.includes(mess.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) setSelectedMesses([...selectedMesses, mess.id]);
-                      else setSelectedMesses(selectedMesses.filter(id => id !== mess.id));
-                    }}
-                  />
-                </td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div className="mess-avatar-chip"><Icon name="utensils" size={13} /></div>
@@ -901,32 +771,11 @@ function AdminPanel() {
                 <option>Active</option>
                 <option>Blocked</option>
               </select>
-              {selectedUsers.length > 0 && (
-                <button 
-                  className="btn-sm" 
-                  onClick={handleBulkDelete}
-                  style={{ background: '#FFEBEE', color: '#D32F2F', border: '1px solid #FFCDD2', padding: '0 16px' }}>
-                  Delete Selected ({selectedUsers.length})
-                </button>
-              )}
             </div>
           </div>
           <table className="admin-table">
             <thead>
               <tr>
-                <th style={{ width: '40px' }}>
-                  <input 
-                    type="checkbox" 
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedUsers(filtered.map(u => u.id));
-                      } else {
-                        setSelectedUsers([]);
-                      }
-                    }}
-                    checked={filtered.length > 0 && selectedUsers.length === filtered.length}
-                  />
-                </th>
                 <th>User Name</th>
                 <th>Email / Phone</th>
                 <th>Role</th>
@@ -937,22 +786,9 @@ function AdminPanel() {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>No users match your filters.</td></tr>
+                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>No users match your filters.</td></tr>
               ) : filtered.map(user => (
                 <tr key={user.id}>
-                  <td>
-                    <input 
-                      type="checkbox" 
-                      checked={selectedUsers.includes(user.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedUsers([...selectedUsers, user.id]);
-                        } else {
-                          setSelectedUsers(selectedUsers.filter(id => id !== user.id));
-                        }
-                      }}
-                    />
-                  </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div className="user-avatar-sm" style={{ backgroundColor: user.role === 'Mess Owner' ? '#FF9800' : '#F26B2E' }}>
@@ -1266,32 +1102,17 @@ function AdminPanel() {
 
   // ── Financials Render ──────────────────────────────────────────────────
   const renderFinancials = () => {
-    const totalRevenue = transactionsList.filter(t => t.status === 'Paid').reduce((s, t) => s + t.amount, 0);
+    const totalRevenue = mockTransactions.filter(t => t.status === 'Paid').reduce((s, t) => s + t.amount, 0);
     const monthlyRevenue = revenueData.length > 0 ? revenueData[revenueData.length - 1].revenue : 0;
-    const pendingAmount = transactionsList.filter(t => t.status === 'Pending').reduce((s, t) => s + t.amount, 0);
-    const completedCount = transactionsList.filter(t => t.status === 'Paid').length;
+    const pendingAmount = mockTransactions.filter(t => t.status === 'Pending').reduce((s, t) => s + t.amount, 0);
+    const completedCount = mockTransactions.filter(t => t.status === 'Paid').length;
 
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-
-    const filtered = transactionsList.filter(tx => {
+    const filtered = mockTransactions.filter(tx => {
       const q = finSearch.toLowerCase();
-      const messStr = (tx.mess || '').toLowerCase();
-      const userStr = (tx.user || '').toLowerCase();
-      const idStr = (tx.id || '').toLowerCase();
-      const matchQ = !q || idStr.includes(q) || messStr.includes(q) || userStr.includes(q);
+      const matchQ = !q || tx.id.toLowerCase().includes(q) || tx.mess.toLowerCase().includes(q) || tx.user.toLowerCase().includes(q);
       const matchMess = finMessFilter === 'All' || tx.mess === finMessFilter;
       const matchStatus = finStatusFilter === 'All' || tx.status === finStatusFilter;
-      let matchDate = true;
-      if (finDateFilter !== 'All' && tx.rawDate) {
-        const txDate = new Date(tx.rawDate);
-        if (finDateFilter === 'This Week') matchDate = txDate >= weekAgo;
-        else if (finDateFilter === 'This Month') matchDate = txDate >= monthAgo;
-        else if (finDateFilter === 'Last 3 Months') matchDate = txDate >= threeMonthsAgo;
-      }
-      return matchQ && matchMess && matchStatus && matchDate;
+      return matchQ && matchMess && matchStatus;
     });
 
     const getPayStatusPill = (status) => {
@@ -1327,14 +1148,14 @@ function AdminPanel() {
             <div className="fin-stat-top">
               <div className="stat-icon-wrap icon-green" style={{ marginBottom: 0 }}><Icon name="check-circle" /></div>
             </div>
-            <div className="fin-stat-amount">₹{transactionsList.filter(t => t.status === 'Paid').reduce((s, t) => s + t.amount, 0).toLocaleString('en-IN')}</div>
-            <div className="stat-label">Paid Transactions</div>
+            <div className="fin-stat-amount">₹{monthlyRevenue.toLocaleString('en-IN')}</div>
+            <div className="stat-label">Monthly Revenue (Apr)</div>
           </div>
 
           <div className="fin-stat-card">
             <div className="fin-stat-top">
               <div className="stat-icon-wrap icon-peach" style={{ marginBottom: 0 }}><Icon name="alert-circle" /></div>
-              <span style={{ fontSize: 11, color: '#FF9800', fontWeight: 700, background: '#FFF3E0', padding: '4px 8px', borderRadius: 12 }}>{transactionsList.filter(t => t.status === 'Pending').length} txns</span>
+              <span style={{ fontSize: 11, color: '#FF9800', fontWeight: 700, background: '#FFF3E0', padding: '4px 8px', borderRadius: 12 }}>2 txns</span>
             </div>
             <div className="fin-stat-amount" style={{ color: '#FF9800' }}>₹{pendingAmount.toLocaleString('en-IN')}</div>
             <div className="stat-label">Pending Payments</div>
@@ -1355,9 +1176,9 @@ function AdminPanel() {
           <div className="table-panel-header">
             <div>
               <h2 className="table-title">All Transactions</h2>
-              <p className="table-subtitle">Showing {filtered.length} of {transactionsList.length} records</p>
+              <p className="table-subtitle">Showing {filtered.length} of {mockTransactions.length} records</p>
             </div>
-            <span className="badge-blue">{transactionsList.filter(t => t.status === 'Paid').length} Paid</span>
+            <span className="badge-blue">{mockTransactions.filter(t => t.status === 'Paid').length} Paid</span>
           </div>
 
           {/* Filters toolbar */}
@@ -1374,7 +1195,7 @@ function AdminPanel() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <select className="filter-select" value={finMessFilter} onChange={e => setFinMessFilter(e.target.value)}>
                 <option value="All">All Messes</option>
-                {[...new Set(transactionsList.map(t => t.mess))].map(m => <option key={m}>{m}</option>)}
+                {[...new Set(mockTransactions.map(t => t.mess))].map(m => <option key={m}>{m}</option>)}
               </select>
               <select className="filter-select" value={finStatusFilter} onChange={e => setFinStatusFilter(e.target.value)}>
                 <option value="All">All Status</option>
@@ -1398,9 +1219,9 @@ function AdminPanel() {
                 <th>Mess Name</th>
                 <th>User</th>
                 <th>Amount</th>
-                <th>Method</th>
                 <th>Payment Status</th>
                 <th>Date</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1419,11 +1240,18 @@ function AdminPanel() {
                     </div>
                   </td>
                   <td style={{ fontWeight: 700, color: '#1A1A1A' }}>₹{tx.amount.toLocaleString('en-IN')}</td>
-                  <td style={{ color: '#7E7E7E', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Icon name="credit-card" size={14} /> {tx.method}
-                  </td>
                   <td>{getPayStatusPill(tx.status)}</td>
                   <td style={{ color: '#9E9E9E', fontSize: 13 }}>{tx.date}</td>
+                  <td className="text-right">
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button className="btn-sm btn-outline-dark" onClick={() => setSelectedTx(tx)}>
+                        <Icon name="eye" size={13} /> View
+                      </button>
+                      <button className="btn-sm" style={{ background: '#F0F7FF', color: '#1976D2', border: '1px solid #BBDEFB' }}>
+                        <Icon name="file-text" size={13} /> Invoice
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
