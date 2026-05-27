@@ -55,7 +55,7 @@ function MessDetail() {
   const fetchUserSubscriptions = async () => {
     if (!user || !user.id) return;
     try {
-      const res = await axios.get(`/api/subscriptions/user/${user.id}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/subscriptions/user/${user.id}`);
       if (res.data.status === 'success') {
         setUserSubscriptions(res.data.subscriptions);
       }
