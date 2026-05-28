@@ -357,11 +357,10 @@ nav {
   gap: 16px;
 }
 
-/* Hero Section */
 .hero-section {
   background-color: var(--bg-hero);
   text-align: center;
-  padding: 100px 20px;
+  padding: 80px 20px;
 }
 
 .hero-badge {

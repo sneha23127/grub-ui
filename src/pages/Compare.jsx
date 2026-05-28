@@ -91,7 +91,7 @@ function Compare() {
     <div className="home-page" style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}>
       <NavBar />
       
-      <main className="container" style={{ paddingBottom: '80px', paddingTop: '40px' }}>
+      <main className="container" style={{ paddingBottom: '80px', paddingTop: '80px' }}>
         
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px' }}>
