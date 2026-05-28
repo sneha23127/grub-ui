@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import signupBg from '../assets/signup-bg.png';
 
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -66,8 +67,15 @@ function Signup() {
 
   return (
     <div className="split-screen">
-      {/* Left Pane (Image & Text) */}
-      <div className="left-pane">
+      {/* Left Pane (Background Image & Text) */}
+      <div 
+        className="left-pane" 
+        style={{ 
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.75)), url(${signupBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
         <div className="brand">
           <div className="logo-icon">GS</div>
           <div className="brand-name">GrubSpot</div>
