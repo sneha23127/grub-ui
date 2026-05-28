@@ -139,7 +139,7 @@ function MessList() {
     <div className="mess-list-page" style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}>
       <NavBar />
 
-      <main className="container section-padding">
+      <main className="container section-padding" style={{ paddingTop: '40px' }}>
         {/* Header Section */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
           <div>

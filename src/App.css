@@ -360,7 +360,7 @@ nav {
 .hero-section {
   background-color: var(--bg-hero);
   text-align: center;
-  padding: 80px 20px;
+  padding: 40px 20px;
 }
 
 .hero-badge {
