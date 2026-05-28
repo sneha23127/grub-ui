@@ -82,17 +82,17 @@ function Compare() {
     }
   };
 
-  const filteredMesses = messes.filter(mess => 
-    mess.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredMesses = messes.filter(mess =>
+    mess.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     mess.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="home-page" style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}>
       <NavBar />
-      
-      <main className="container" style={{ paddingBottom: '80px', paddingTop: '40px' }}>
-        
+
+      <main className="container" style={{ paddingTop: '40px' }}>
+
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px' }}>
             Compare <span style={{ color: '#F26B2E' }}>Messes</span>
@@ -103,21 +103,21 @@ function Compare() {
         </div>
 
         <div className="compare-layout">
-          
+
           {/* LEFT SIDEBAR - Selection */}
           <div className="selection-sidebar">
             <div className="search-box" style={{ margin: '0 0 16px 0', background: '#FFF0E6', border: 'none' }}>
               <span style={{ marginLeft: '16px', color: '#F26B2E' }}>🔍</span>
-              <input 
-                type="text" 
-                className="search-input" 
-                placeholder="Search mess..." 
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search mess..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ background: 'transparent', border: 'none' }}
               />
             </div>
-            
+
             <div style={{ fontSize: '12px', color: '#7E7E7E', marginBottom: '16px' }}>
               {selectedMesses.length}/3 selected
             </div>
@@ -126,10 +126,10 @@ function Compare() {
               {filteredMesses.map(mess => {
                 const isSelected = selectedMesses.find(m => m.id === mess.id);
                 const isDisabled = !isSelected && selectedMesses.length >= 3;
-                
+
                 return (
-                  <div 
-                    key={mess.id} 
+                  <div
+                    key={mess.id}
                     className={`selectable-mess-card ${isSelected ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
                     onClick={() => !isDisabled && handleToggle(mess)}
                   >
@@ -154,7 +154,7 @@ function Compare() {
               </div>
             ) : (
               <div className="matrix-wrapper">
-                
+
                 {/* Header Cards Row */}
                 <div className="matrix-row header-cards-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
                   <div className="matrix-cell empty-cell"></div>
@@ -238,13 +238,13 @@ function Compare() {
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
                   <div className="matrix-cell row-label">1 Month (Veg/Non-Veg)</div>
                   {selectedMesses.map(mess => (
-                     <div key={mess.id} className="matrix-cell">₹{mess.plans.oneMonthVeg} / ₹{mess.plans.oneMonthNonVeg}</div>
+                    <div key={mess.id} className="matrix-cell">₹{mess.plans.oneMonthVeg} / ₹{mess.plans.oneMonthNonVeg}</div>
                   ))}
                 </div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
                   <div className="matrix-cell row-label">3 Months (Veg/Non-Veg)</div>
                   {selectedMesses.map(mess => (
-                     <div key={mess.id} className="matrix-cell">₹{mess.plans.threeMonthVeg} / ₹{mess.plans.threeMonthNonVeg}</div>
+                    <div key={mess.id} className="matrix-cell">₹{mess.plans.threeMonthVeg} / ₹{mess.plans.threeMonthNonVeg}</div>
                   ))}
                 </div>
 
