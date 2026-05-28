@@ -756,7 +756,7 @@ function OwnerPanel() {
         <div className="admin-stat-box-sm">
           <div>
             <div className="stat-label">Today's Revenue</div>
-            <div className="stat-value">₹0</div>
+            <div className="stat-value">₹{earningStats.today.toLocaleString('en-IN')}</div>
           </div>
           <div className="stat-icon-wrap icon-green"><Icon name="dollar-sign" size={20} /></div>
         </div>
@@ -1615,18 +1615,18 @@ function OwnerPanel() {
         <div className="admin-stats-grid">
           <div className="admin-stat-box">
             <div className="stat-label">Today</div>
-            <div className="stat-value">₹0</div>
-            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>0 transactions today</div>
+            <div className="stat-value">₹{earningStats.today.toLocaleString('en-IN')}</div>
+            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>{earningStats.todayCount} transactions today</div>
           </div>
           <div className="admin-stat-box">
             <div className="stat-label">This week</div>
-            <div className="stat-value">₹0</div>
-            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>0 transactions</div>
+            <div className="stat-value">₹{earningStats.week.toLocaleString('en-IN')}</div>
+            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>{earningStats.weekCount} transactions</div>
           </div>
           <div className="admin-stat-box">
             <div className="stat-label">This month</div>
-            <div className="stat-value">₹0</div>
-            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>0 transactions</div>
+            <div className="stat-value">₹{earningStats.month.toLocaleString('en-IN')}</div>
+            <div className="owner-stat-subtext" style={{ marginTop: 12 }}>{earningStats.monthCount} transactions</div>
           </div>
         </div>
 
@@ -1654,11 +1654,25 @@ function OwnerPanel() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>
-                  No transactions found.
-                </td>
-              </tr>
+              {transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>
+                    No transactions found.
+                  </td>
+                </tr>
+              ) : transactions.map(tx => (
+                <tr key={tx.id}>
+                  <td style={{ fontWeight: 600, color: '#F26B2E', fontFamily: 'monospace' }}>{tx.id}</td>
+                  <td style={{ fontWeight: 600 }}>{tx.name}</td>
+                  <td style={{ fontWeight: 700, color: '#1A1A1A' }}>₹{tx.amount.toLocaleString('en-IN')}</td>
+                  <td style={{ color: '#4B5563', fontSize: 13 }}>{tx.date}</td>
+                  <td>
+                    <span className="owner-status-pill active" style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700, backgroundColor: '#E8F5E9', color: '#4CAF50' }}>
+                      ✓ Paid
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

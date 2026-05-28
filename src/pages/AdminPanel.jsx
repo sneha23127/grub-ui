@@ -305,10 +305,61 @@ function AdminPanel() {
 
 
 
-  const mockTransactions = [];
+  const mockTransactions = useMemo(() => {
+    return subscriptionsList.map(s => ({
+      id: `TXN-${s.id.toString().padStart(6, '0')}`,
+      mess: s.mess_name || 'N/A',
+      user: s.user_name || 'Guest User',
+      amount: parseFloat(s.total_amount) || 0,
+      status: s.status === 'ACTIVE' || s.status === 'PAUSED' ? 'Paid' : 'Failed',
+      date: s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB') : 'N/A',
+      rawDate: s.created_at
+    }));
+  }, [subscriptionsList]);
 
-  const revenueData = [];
-  const paymentBreakdown = [];
+  const revenueData = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyMap = {};
+    const now = new Date();
+    
+    // Initialize last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${months[d.getMonth()]} ${d.getFullYear().toString().slice(-2)}`;
+      monthlyMap[key] = 0;
+    }
+
+    subscriptionsList.forEach(s => {
+      if (!s.created_at) return;
+      const d = new Date(s.created_at);
+      const key = `${months[d.getMonth()]} ${d.getFullYear().toString().slice(-2)}`;
+      if (monthlyMap[key] !== undefined) {
+        monthlyMap[key] += parseFloat(s.total_amount) || 0;
+      }
+    });
+
+    return Object.keys(monthlyMap).map(key => ({
+      month: key.split(' ')[0],
+      revenue: monthlyMap[key]
+    }));
+  }, [subscriptionsList]);
+
+  const paymentBreakdown = useMemo(() => {
+    let upiCount = 0;
+    let cashCount = 0;
+    subscriptionsList.forEach(s => {
+      const method = (s.payment_method || '').toLowerCase();
+      if (method.includes('upi') || method.includes('online')) {
+        upiCount++;
+      } else {
+        cashCount++;
+      }
+    });
+    return [
+      { label: 'UPI', count: upiCount, color: '#F26B2E' },
+      { label: 'Cash', count: cashCount, color: '#4CAF50' }
+    ];
+  }, [subscriptionsList]);
 
   const getStatusPill = (status) => {
     switch (status) {
