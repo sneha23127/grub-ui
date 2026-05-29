@@ -145,7 +145,7 @@ export function requestUserLocation() {
         _locationPromise = null;
         resolve(null);
       },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   });
 
