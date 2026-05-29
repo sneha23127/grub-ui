@@ -54,6 +54,7 @@ function OwnerPanel() {
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editOwnerData, setEditOwnerData] = useState({ ...messInfo });
+  const [selectedTx, setSelectedTx] = useState(null);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -406,7 +407,12 @@ function OwnerPanel() {
       date: s.startDate,
       status: 'Paid',
       initials,
-      color: randomColor
+      color: randomColor,
+      plan: s.plan,
+      meals: s.meals,
+      deliveryType: s.deliveryType,
+      paymentMethod: s.paymentMethod,
+      endDate: s.endDate
     };
   });
 
@@ -1661,12 +1667,13 @@ function OwnerPanel() {
                 <th>Amount</th>
                 <th>Date</th>
                 <th>Status</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 24px', color: '#9E9E9E' }}>
                     No transactions found.
                   </td>
                 </tr>
@@ -1681,11 +1688,73 @@ function OwnerPanel() {
                       ✓ Paid
                     </span>
                   </td>
+                  <td className="text-right">
+                    <button 
+                      className="btn-sm btn-outline-dark" 
+                      onClick={() => setSelectedTx(tx)}
+                      style={{ 
+                        padding: '4px 10px', 
+                        borderRadius: '6px', 
+                        border: '1px solid #D1D5DB', 
+                        background: '#FFFFFF', 
+                        color: '#374151', 
+                        fontWeight: '600', 
+                        fontSize: '12px', 
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Icon name="eye" size={13} /> View
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {/* Transaction Detail Modal */}
+        {selectedTx && (
+          <div className="admin-modal-overlay" onClick={() => setSelectedTx(null)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+            <div className="admin-modal-content" style={{ background: 'white', padding: '32px', borderRadius: '16px', maxWidth: '480px', width: '90%', position: 'relative' }} onClick={e => e.stopPropagation()}>
+              <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div>
+                  <h2 className="modal-title" style={{ fontSize: 20, fontWeight: 800 }}>Transaction Details</h2>
+                  <div className="modal-subtitle" style={{ fontSize: 13, color: '#7E7E7E', marginTop: 4 }}>{selectedTx.id}</div>
+                </div>
+                <button className="modal-close-btn" onClick={() => setSelectedTx(null)} style={{ border: 'none', background: 'none', fontSize: 20, cursor: 'pointer' }}>✕</button>
+              </div>
+              <div className="modal-body-scroll" style={{ paddingTop: 0 }}>
+                <div className="fin-tx-detail-card" style={{ textAlign: 'center', background: '#F8FAFC', padding: 20, borderRadius: 12, marginBottom: 20 }}>
+                  <div className="fin-tx-amount" style={{ fontSize: 24, fontWeight: 800, color: '#1A1A1A' }}>₹{selectedTx.amount.toLocaleString('en-IN')}</div>
+                  <div style={{ marginTop: 4 }}><span className="owner-status-pill active" style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700, backgroundColor: '#E8F5E9', color: '#4CAF50', display: 'inline-block' }}>✓ Paid</span></div>
+                </div>
+                {[
+                  ['Transaction ID', selectedTx.id],
+                  ['Student Name', selectedTx.name],
+                  ['Plan Duration', selectedTx.plan],
+                  ['Meals Included', selectedTx.meals],
+                  ['Delivery Type', selectedTx.deliveryType],
+                  ['Start Date', selectedTx.date],
+                  ['End Date', selectedTx.endDate],
+                  ['Payment Method', selectedTx.paymentMethod],
+                ].map(([label, value]) => (
+                  <div key={label} className="fin-detail-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F0F0F0', fontSize: 13 }}>
+                    <span className="fin-detail-label" style={{ color: '#7E7E7E', fontWeight: 500 }}>{label}</span>
+                    <span className="fin-detail-value" style={{ color: '#1A1A1A', fontWeight: 600, textAlign: 'right' }}>{value}</span>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                  <button className="btn-sm btn-outline-dark" style={{ flex: 1, padding: '10px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', fontWeight: 600 }} onClick={() => setSelectedTx(null)}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };

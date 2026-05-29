@@ -1298,9 +1298,6 @@ function AdminPanel() {
                       <button className="btn-sm btn-outline-dark" onClick={() => setSelectedTx(tx)}>
                         <Icon name="eye" size={13} /> View
                       </button>
-                      <button className="btn-sm" style={{ background: '#F0F7FF', color: '#1976D2', border: '1px solid #BBDEFB' }}>
-                        <Icon name="file-text" size={13} /> Invoice
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -1340,9 +1337,6 @@ function AdminPanel() {
                   </div>
                 ))}
                 <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-                  <button className="btn-primary-sm" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                    <Icon name="file-text" size={14} /> Download Invoice
-                  </button>
                   <button className="btn-sm btn-outline-dark" style={{ flex: 1, padding: '10px 16px', justifyContent: 'center' }} onClick={() => setSelectedTx(null)}>
                     Close
                   </button>
