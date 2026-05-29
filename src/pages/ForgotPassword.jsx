@@ -84,14 +84,12 @@ function ForgotPassword() {
         setCooldown(60); // 60 seconds cooldown
         setBanner({
           type: 'success',
-          text: `Verification code sent! Simulated OTP: ${response.data.otp}`,
+          text: `Verification code has been sent to your email address.`,
           link: response.data.previewUrl
         });
         
-        // Auto-fill OTP in development for convenience
-        const otpDigits = response.data.otp.split('');
-        setOtp(otpDigits);
-        // Focus verification field
+        // Clear OTP inputs and focus the first input for manual typing
+        setOtp(['', '', '', '', '', '']);
         setTimeout(() => otpInputsRef.current[0]?.focus(), 100);
       }
     } catch (error) {
