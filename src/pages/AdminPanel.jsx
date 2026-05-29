@@ -1458,18 +1458,23 @@ function AdminPanel() {
                         </svg>
                       </div>
                     </div>
-                    <div className="password-requirements" style={{ marginTop: '12px', padding: '12px', background: '#F8FAFC', borderRadius: '8px', fontSize: '12px' }}>
-                      <div style={{ color: newMessData.password.length >= 8 ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                        <Icon name={newMessData.password.length >= 8 ? "check-circle" : "circle"} size={14} /> At least 8 characters
-                      </div>
-                      <div style={{ color: /[A-Z]/.test(newMessData.password) ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                        <Icon name={/[A-Z]/.test(newMessData.password) ? "check-circle" : "circle"} size={14} /> One uppercase letter
-                      </div>
-                      <div style={{ color: /[0-9]/.test(newMessData.password) ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                        <Icon name={/[0-9]/.test(newMessData.password) ? "check-circle" : "circle"} size={14} /> One number
-                      </div>
-                      <div style={{ color: /[^A-Za-z0-9]/.test(newMessData.password) ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Icon name={/[^A-Za-z0-9]/.test(newMessData.password) ? "check-circle" : "circle"} size={14} /> One special character
+                    {/* Password Requirements Checklist */}
+                    <div style={{ marginTop: '12px', padding: '12px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Password must contain:</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        {[
+                          { label: '8+ Characters', met: newMessData.password.length >= 8 },
+                          { label: 'One Uppercase', met: /[A-Z]/.test(newMessData.password) },
+                          { label: 'One Number', met: /[0-9]/.test(newMessData.password) },
+                          { label: 'Special Char', met: /[^A-Za-z0-9]/.test(newMessData.password) }
+                        ].map((req, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: req.met ? '#10B981' : '#94A3B8', transition: '0.2s color' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              {req.met ? <polyline points="20 6 9 17 4 12"></polyline> : <circle cx="12" cy="12" r="10"></circle>}
+                            </svg>
+                            {req.label}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
