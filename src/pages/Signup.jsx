@@ -42,6 +42,16 @@ function Signup() {
       return;
     }
 
+    const hasLength = formData.password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(formData.password);
+    const hasNumber = /[0-9]/.test(formData.password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(formData.password);
+
+    if (!hasLength || !hasUppercase || !hasNumber || !hasSpecial) {
+      alert("Password must contain at least 8 characters, one uppercase letter, one number, and one special character.");
+      return;
+    }
+
     const fullPhone = `${formData.countryCode} ${formData.phoneNum}`;
 
     try {
