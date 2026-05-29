@@ -3,6 +3,59 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import signupBg from '../assets/signup-bg.png';
 
+// Per-country phone validation rules
+const PHONE_RULES = {
+  '+91': {
+    label: 'IN',
+    digits: 10,
+    pattern: /^[6-9]\d{9}$/,
+    placeholder: '98765 43210',
+    hint: '10 digits, starts with 6–9'
+  },
+  '+1': {
+    label: 'US/CA',
+    digits: 10,
+    pattern: /^[2-9]\d{2}[2-9]\d{6}$/,
+    placeholder: '2015551234',
+    hint: '10 digits (area code + number)'
+  },
+  '+44': {
+    label: 'UK',
+    digits: 10,
+    pattern: /^[1-9]\d{8,9}$/,
+    placeholder: '7911123456',
+    hint: '9–10 digits (without leading 0)'
+  },
+  '+61': {
+    label: 'AU',
+    digits: 9,
+    pattern: /^[2-9]\d{8}$/,
+    placeholder: '412345678',
+    hint: '9 digits (without leading 0)'
+  },
+  '+49': {
+    label: 'DE',
+    digits: 10,
+    pattern: /^[1-9]\d{9}$/,
+    placeholder: '15123456789',
+    hint: '10–11 digits (without leading 0)'
+  },
+  '+971': {
+    label: 'UAE',
+    digits: 9,
+    pattern: /^[0-9]\d{8}$/,
+    placeholder: '501234567',
+    hint: '9 digits'
+  },
+  '+65': {
+    label: 'SG',
+    digits: 8,
+    pattern: /^[689]\d{7}$/,
+    placeholder: '91234567',
+    hint: '8 digits, starts with 6, 8, or 9'
+  },
+};
+
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -23,9 +76,19 @@ function Signup() {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
+      // Clear phone number when country code changes so stale digits don't persist
+      ...(name === 'countryCode' ? { phoneNum: '' } : {})
     }));
   };
+
+  // Derived phone rule for currently selected country code
+  const phoneRule = PHONE_RULES[formData.countryCode] || {
+    digits: 10, pattern: /^\d{7,15}$/, placeholder: 'Phone number', hint: '7–15 digits'
+  };
+
+  // Live validity check (only shown after user starts typing)
+  const phoneValid = phoneRule.pattern.test(formData.phoneNum.replace(/\s/g, ''));
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -39,6 +102,13 @@ function Signup() {
     }
     if (!formData.agreed) {
       alert("You must agree to the Terms of Service.");
+      return;
+    }
+
+    // Country-specific phone validation
+    const rawPhone = formData.phoneNum.replace(/\s/g, '');
+    if (!phoneRule.pattern.test(rawPhone)) {
+      alert(`Invalid phone number. ${phoneRule.hint} required for ${formData.countryCode}.`);
       return;
     }
 
@@ -120,10 +190,42 @@ function Signup() {
               <div className="phone-inputs">
                 <select name="countryCode" value={formData.countryCode} onChange={handleChange} className="input-field country-code">
                   <option value="+91">+91 (IN)</option>
-                  <option value="+1">+1 (US)</option>
+                  <option value="+1">+1 (US/CA)</option>
                   <option value="+44">+44 (UK)</option>
+                  <option value="+61">+61 (AU)</option>
+                  <option value="+49">+49 (DE)</option>
+                  <option value="+971">+971 (UAE)</option>
+                  <option value="+65">+65 (SG)</option>
                 </select>
-                <input type="tel" name="phoneNum" value={formData.phoneNum} onChange={handleChange} className="input-field phone-number" placeholder="98765 43210" />
+                <input
+                  type="tel"
+                  name="phoneNum"
+                  value={formData.phoneNum}
+                  onChange={handleChange}
+                  className="input-field phone-number"
+                  placeholder={phoneRule.placeholder}
+                  maxLength={phoneRule.digits + 2}
+                />
+              </div>
+              {/* Per-country format hint */}
+              <div style={{
+                marginTop: '6px',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: formData.phoneNum
+                  ? (phoneValid ? '#10B981' : '#EF4444')
+                  : '#94A3B8'
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  {formData.phoneNum
+                    ? (phoneValid
+                        ? <polyline points="20 6 9 17 4 12"></polyline>
+                        : <circle cx="12" cy="12" r="10"></circle>)
+                    : <circle cx="12" cy="12" r="10"></circle>}
+                </svg>
+                {phoneRule.hint}
               </div>
             </div>
 
