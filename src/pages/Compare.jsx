@@ -234,7 +234,7 @@ function Compare() {
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
                   <div className="matrix-cell row-label">Breakfast (Veg/Non-Veg)</div>
                   {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell">₹{mess.pricing.breakfastVeg || 0} / ₹{mess.pricing.breakfastNonVeg || 0}</div>
+                    <div key={mess.id} className="matrix-cell">₹{mess.pricing?.breakfastVeg || mess.pricing?.breakfast || 0} / ₹{mess.pricing?.breakfastNonVeg || mess.pricing?.breakfast || 0}</div>
                   ))}
                 </div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
