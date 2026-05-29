@@ -232,43 +232,81 @@ function Compare() {
                 {/* PRICING Category */}
                 <div className="matrix-category">PRICING (PER MEAL)</div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
-                  <div className="matrix-cell row-label">Breakfast (Veg/Non-Veg)</div>
-                  {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell">₹{mess.pricing?.breakfastVeg || mess.pricing?.breakfast || 0} / ₹{mess.pricing?.breakfastNonVeg || mess.pricing?.breakfast || 0}</div>
-                  ))}
+                  <div className="matrix-cell row-label">Breakfast</div>
+                  {selectedMesses.map(mess => {
+                    const isVeg = mess.tag === 'Veg';
+                    const isNonVeg = mess.tag === 'Non-Veg';
+                    const vegPrice = mess.pricing?.breakfastVeg || mess.pricing?.breakfast || 0;
+                    const nonVegPrice = mess.pricing?.breakfastNonVeg || mess.pricing?.breakfast || 0;
+                    return (
+                      <div key={mess.id} className="matrix-cell">
+                        {isVeg ? `₹${vegPrice} (Veg)` : isNonVeg ? `₹${nonVegPrice} (Non-Veg)` : `₹${vegPrice} / ₹${nonVegPrice}`}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
-                  <div className="matrix-cell row-label">Lunch (Veg/Non-Veg)</div>
-                  {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell">₹{mess.pricing.lunchVeg} / ₹{mess.pricing.lunchNonVeg}</div>
-                  ))}
+                  <div className="matrix-cell row-label">Lunch</div>
+                  {selectedMesses.map(mess => {
+                    const isVeg = mess.tag === 'Veg';
+                    const isNonVeg = mess.tag === 'Non-Veg';
+                    return (
+                      <div key={mess.id} className="matrix-cell">
+                        {isVeg ? `₹${mess.pricing?.lunchVeg || 0} (Veg)` : isNonVeg ? `₹${mess.pricing?.lunchNonVeg || 0} (Non-Veg)` : `₹${mess.pricing?.lunchVeg || 0} / ₹${mess.pricing?.lunchNonVeg || 0}`}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
-                  <div className="matrix-cell row-label">Dinner (Veg/Non-Veg)</div>
-                  {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell">₹{mess.pricing.dinnerVeg} / ₹{mess.pricing.dinnerNonVeg}</div>
-                  ))}
+                  <div className="matrix-cell row-label">Dinner</div>
+                  {selectedMesses.map(mess => {
+                    const isVeg = mess.tag === 'Veg';
+                    const isNonVeg = mess.tag === 'Non-Veg';
+                    return (
+                      <div key={mess.id} className="matrix-cell">
+                        {isVeg ? `₹${mess.pricing?.dinnerVeg || 0} (Veg)` : isNonVeg ? `₹${mess.pricing?.dinnerNonVeg || 0} (Non-Veg)` : `₹${mess.pricing?.dinnerVeg || 0} / ₹${mess.pricing?.dinnerNonVeg || 0}`}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* PLANS Category */}
                 <div className="matrix-category">PLANS</div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
-                  <div className="matrix-cell row-label">Trial (Veg/Non-Veg)</div>
-                  {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell">₹{mess.plans.trialVeg} / ₹{mess.plans.trialNonVeg}</div>
-                  ))}
+                  <div className="matrix-cell row-label">Trial Plan</div>
+                  {selectedMesses.map(mess => {
+                    const isVeg = mess.tag === 'Veg';
+                    const isNonVeg = mess.tag === 'Non-Veg';
+                    return (
+                      <div key={mess.id} className="matrix-cell">
+                        {isVeg ? `₹${mess.plans?.trialVeg || 0} (Veg)` : isNonVeg ? `₹${mess.plans?.trialNonVeg || 0} (Non-Veg)` : `₹${mess.plans?.trialVeg || 0} / ₹${mess.plans?.trialNonVeg || 0}`}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
-                  <div className="matrix-cell row-label">1 Month (Veg/Non-Veg)</div>
-                  {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell">₹{mess.plans.oneMonthVeg} / ₹{mess.plans.oneMonthNonVeg}</div>
-                  ))}
+                  <div className="matrix-cell row-label">1 Month Plan</div>
+                  {selectedMesses.map(mess => {
+                    const isVeg = mess.tag === 'Veg';
+                    const isNonVeg = mess.tag === 'Non-Veg';
+                    return (
+                      <div key={mess.id} className="matrix-cell">
+                        {isVeg ? `₹${mess.plans?.oneMonthVeg || 0} (Veg)` : isNonVeg ? `₹${mess.plans?.oneMonthNonVeg || 0} (Non-Veg)` : `₹${mess.plans?.oneMonthVeg || 0} / ₹${mess.plans?.oneMonthNonVeg || 0}`}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
-                  <div className="matrix-cell row-label">3 Months (Veg/Non-Veg)</div>
-                  {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell">₹{mess.plans.threeMonthVeg} / ₹{mess.plans.threeMonthNonVeg}</div>
-                  ))}
+                  <div className="matrix-cell row-label">3 Month Plan</div>
+                  {selectedMesses.map(mess => {
+                    const isVeg = mess.tag === 'Veg';
+                    const isNonVeg = mess.tag === 'Non-Veg';
+                    return (
+                      <div key={mess.id} className="matrix-cell">
+                        {isVeg ? `₹${mess.plans?.threeMonthVeg || 0} (Veg)` : isNonVeg ? `₹${mess.plans?.threeMonthNonVeg || 0} (Non-Veg)` : `₹${mess.plans?.threeMonthVeg || 0} / ₹${mess.plans?.threeMonthNonVeg || 0}`}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* TIMINGS Category */}
