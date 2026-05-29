@@ -32,6 +32,8 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [locating, setLocating] = useState(false);
+  const [locStatus, setLocStatus] = useState(''); // 'success' | 'error' | ''
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -43,7 +45,9 @@ function Signup() {
     mess_name: '',
     address: '',
     password: '',
-    agreed: false
+    agreed: false,
+    latitude: null,
+    longitude: null
   });
 
   const handleChange = (e) => {
@@ -91,6 +95,32 @@ function Signup() {
         }
       }
     }
+  };
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      setLocStatus('error');
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLocating(true);
+    setLocStatus('');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        console.log('[Signup] Detected location:', lat, lng);
+        setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+        setLocating(false);
+        setLocStatus('success');
+      },
+      (err) => {
+        console.warn('[Signup] Location error:', err.message);
+        setLocating(false);
+        setLocStatus('error');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   // Derived phone rule for currently selected country code
@@ -162,6 +192,8 @@ function Signup() {
         role: formData.role,
         mess_name: formData.role === 'mess_owner' ? formData.mess_name : null,
         address: formData.address,
+        latitude: formData.latitude || null,
+        longitude: formData.longitude || null,
         password: formData.password
       });
 
@@ -301,6 +333,32 @@ function Signup() {
               <div className="input-group">
                 <label className="input-label">Address</label>
                 <input type="text" name="address" value={formData.address} onChange={handleChange} className="input-field" placeholder={formData.role === 'student' ? "Hostel/PG address in Bengaluru" : "Business address"} />
+                {formData.role === 'mess_owner' && (
+                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <button
+                      type="button"
+                      onClick={detectLocation}
+                      disabled={locating}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
+                        background: locating ? '#94A3B8' : '#1E293B', color: '#fff',
+                        border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                        cursor: locating ? 'not-allowed' : 'pointer', transition: '0.2s'
+                      }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+                      {locating ? 'Detecting...' : 'Detect Location'}
+                    </button>
+                    {locStatus === 'success' && (
+                      <span style={{ color: '#10B981', fontSize: 12, fontWeight: 600 }}>
+                        ✓ GPS coordinates captured ({formData.latitude?.toFixed(4)}, {formData.longitude?.toFixed(4)})
+                      </span>
+                    )}
+                    {locStatus === 'error' && (
+                      <span style={{ color: '#EF4444', fontSize: 12, fontWeight: 600 }}>✗ Location access denied</span>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
