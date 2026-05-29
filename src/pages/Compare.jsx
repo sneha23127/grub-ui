@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
-import { getUserCoords, getDistanceToMess } from '../utils/location';
+import { getUserCoords, getDistanceToMess, getDistanceFromCoords, requestUserLocation } from '../utils/location';
 
 function Compare() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,7 +12,8 @@ function Compare() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchMesses();
+    // Request location FIRST so getUserCoords() has data when fetchMesses runs
+    requestUserLocation().then(() => fetchMesses());
   }, []);
 
   const fetchMesses = async () => {
@@ -30,6 +31,8 @@ function Compare() {
           tag: m.details?.tag || 'GENERAL',
           price: m.details?.subscriptionPlans?.oneMonthVeg ? '₹' + m.details.subscriptionPlans.oneMonthVeg.toLocaleString('en-IN') : 'Price Not Set',
           fullAddress: m.address || "Location not set",
+          latitude: m.latitude,
+          longitude: m.longitude,
           phone: m.phone || "Not set",
           pricing: m.details?.pricing || { breakfast: 0, lunchVeg: 0, lunchNonVeg: 0, dinnerVeg: 0, dinnerNonVeg: 0 },
           menu: m.details?.timings || { breakfast: "00:00 AM - 00:00 AM", lunch: "00:00 PM - 00:00 PM", dinner: "00:00 PM - 00:00 PM" },
@@ -38,14 +41,16 @@ function Compare() {
         }));
         setMesses(mapped);
 
-        // Compute distances for all messes in background
+        // Compute distances — use stored lat/lng from DB first (instant),
+        // fall back to Nominatim geocoding of the address string if coordinates unavailable.
         const userCoords = getUserCoords();
         if (userCoords) {
           const withDistances = await Promise.all(
-            mapped.map(async (m) => ({
-              ...m,
-              distance: await getDistanceToMess(userCoords, m.fullAddress)
-            }))
+            mapped.map(async (m) => {
+              const direct = getDistanceFromCoords(userCoords, m.latitude, m.longitude);
+              const distance = direct !== null ? direct : await getDistanceToMess(userCoords, m.fullAddress);
+              return { ...m, distance };
+            })
           );
           setMesses(withDistances);
         } else {
