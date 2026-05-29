@@ -3,6 +3,31 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 
+// Per-country phone validation rules — IN, UK, UAE only
+const PHONE_RULES = {
+  '+91': {
+    label: 'IN',
+    digits: 10,
+    pattern: /^[6-9]\d{9}$/,
+    placeholder: '98765 43210',
+    hint: '10 digits, starts with 6–9'
+  },
+  '+44': {
+    label: 'UK',
+    digits: 10,
+    pattern: /^[1-9]\d{8,9}$/,
+    placeholder: '7911 123456',
+    hint: '9–10 digits without leading 0'
+  },
+  '+971': {
+    label: 'UAE',
+    digits: 9,
+    pattern: /^[0-9]\d{8}$/,
+    placeholder: '501234567',
+    hint: '9 digits'
+  },
+};
+
 function OwnerPanel() {
   const [activeTab, setActiveTab] = useState('Overview');
   const [selectedDate, setSelectedDate] = useState(new Date(2026, 3, 2)); // April 2, 2026
@@ -236,7 +261,8 @@ function OwnerPanel() {
   const [newSubData, setNewSubData] = useState({
     name: '',
     email: '',
-    phone: '+91 ',
+    countryCode: '+91',
+    phoneNum: '',
     address: '',
     password: '',
     selectedMeals: {
@@ -265,7 +291,10 @@ function OwnerPanel() {
   const closeAddSubModal = () => {
     setIsAddUserModalOpen(false);
     setShowSubPassword(false);
+    setPhoneError('');
   };
+
+  const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
     let dailyCost = 0;
@@ -1782,18 +1811,13 @@ function OwnerPanel() {
         return;
       }
       
-      // Clean and normalize the phone number
-      let cleanedPhone = newSubData.phone.replace(/[\s-()]/g, '');
-      if (cleanedPhone.startsWith('+91')) {
-        cleanedPhone = cleanedPhone.substring(3);
-      } else if (cleanedPhone.startsWith('91') && cleanedPhone.length > 10) {
-        cleanedPhone = cleanedPhone.substring(2);
-      }
-      if (cleanedPhone.length !== 10 || !/^\d+$/.test(cleanedPhone)) {
-        alert('Please enter a valid 10-digit phone number.');
+      const phoneRule = PHONE_RULES[newSubData.countryCode];
+      const rawPhone = newSubData.phoneNum.replace(/\s/g, '');
+      if (!rawPhone || (phoneRule && !phoneRule.pattern.test(rawPhone))) {
+        alert(`Invalid phone number. ${phoneRule?.hint || 'Valid number required'}.`);
         return;
       }
-      const formattedPhone = `+91 ${cleanedPhone.substring(0, 5)} ${cleanedPhone.substring(5)}`;
+      const formattedPhone = `${newSubData.countryCode} ${rawPhone}`;
       
       const userEmail = newSubData.email.trim().toLowerCase();
       
@@ -1960,15 +1984,40 @@ function OwnerPanel() {
 
                 <div>
                   <label className="info-label">Phone Number</label>
-                  <input 
-                    type="text" 
-                    required 
-                    placeholder="+91 " 
-                    className="edit-input" 
-                    value={newSubData.phone} 
-                    onChange={e => setNewSubData({...newSubData, phone: e.target.value})} 
-                    style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 8, border: '1px solid #DDD' }} 
-                  />
+                  <div style={{ display: 'flex', gap: '8px', marginTop: 4 }}>
+                    <select 
+                      className="edit-input" 
+                      style={{ width: '100px', padding: '0 8px', borderRadius: 8, border: '1px solid #DDD' }}
+                      value={newSubData.countryCode}
+                      onChange={(e) => {
+                        setNewSubData({...newSubData, countryCode: e.target.value, phoneNum: ''});
+                        setPhoneError('');
+                      }}
+                    >
+                      <option value="+91">+91 (IN)</option>
+                      <option value="+44">+44 (UK)</option>
+                      <option value="+971">+971 (UAE)</option>
+                    </select>
+                    <input 
+                      type="tel" 
+                      required 
+                      placeholder={PHONE_RULES[newSubData.countryCode]?.placeholder || 'Number'} 
+                      className="edit-input" 
+                      value={newSubData.phoneNum} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNewSubData({...newSubData, phoneNum: val});
+                        const rule = PHONE_RULES[newSubData.countryCode];
+                        if (val && rule && !rule.pattern.test(val.replace(/\s/g, ''))) {
+                          setPhoneError(`Invalid format. ${rule.hint}`);
+                        } else {
+                          setPhoneError('');
+                        }
+                      }} 
+                      style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #DDD' }} 
+                    />
+                  </div>
+                  {phoneError && <div style={{ color: '#EF4444', fontSize: '11px', marginTop: '4px' }}>{phoneError}</div>}
                 </div>
 
                 <div>

@@ -3,6 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css'; 
 
+// Per-country phone validation rules — IN, UK, UAE only
+const PHONE_RULES = {
+  '+91': {
+    label: 'IN',
+    digits: 10,
+    pattern: /^[6-9]\d{9}$/,
+    placeholder: '98765 43210',
+    hint: '10 digits, starts with 6–9'
+  },
+  '+44': {
+    label: 'UK',
+    digits: 10,
+    pattern: /^[1-9]\d{8,9}$/,
+    placeholder: '7911 123456',
+    hint: '9–10 digits without leading 0'
+  },
+  '+971': {
+    label: 'UAE',
+    digits: 9,
+    pattern: /^[0-9]\d{8}$/,
+    placeholder: '501234567',
+    hint: '9 digits'
+  },
+};
+
 function AdminPanel() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Dashboard');
@@ -124,11 +149,13 @@ function AdminPanel() {
 
   const [isAddMessModalOpen, setIsAddMessModalOpen] = useState(false);
   const [showMessPassword, setShowMessPassword] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
   const [newMessData, setNewMessData] = useState({ 
     name: '', 
     owner: '', 
     location: '', 
-    phone: '+91 ', 
+    countryCode: '+91',
+    phoneNum: '',
     email: '',
     password: '',
     googleMapUrl: ''
@@ -156,21 +183,23 @@ function AdminPanel() {
       return;
     }
 
-    // Strip optional +91 or 91 country code to validate a 10-digit base number
-    let basePhone = newMessData.phone.replace(/\s+/g, '');
-    if (basePhone.startsWith('+91')) {
-      basePhone = basePhone.substring(3);
-    } else if (basePhone.startsWith('91') && basePhone.length > 10) {
-      basePhone = basePhone.substring(2);
-    }
-    basePhone = basePhone.replace(/\D/g, ''); // Remove non-digits
-
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(basePhone)) {
-      alert("Please enter a valid 10-digit phone number.");
+    const phoneRule = PHONE_RULES[newMessData.countryCode];
+    const rawPhone = newMessData.phoneNum.replace(/\s/g, '');
+    if (!rawPhone || (phoneRule && !phoneRule.pattern.test(rawPhone))) {
+      alert(`Invalid phone number. ${phoneRule?.hint || 'Valid number required'}.`);
       return;
     }
-    const cleanPhone = `+91 ${basePhone}`;
+    const cleanPhone = `${newMessData.countryCode} ${rawPhone}`;
+
+    const hasLength = newMessData.password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(newMessData.password);
+    const hasNumber = /[0-9]/.test(newMessData.password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(newMessData.password);
+
+    if (!hasLength || !hasUppercase || !hasNumber || !hasSpecial) {
+      alert("Password must contain at least 8 characters, one uppercase letter, one number, and one special character.");
+      return;
+    }
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/add-mess-owner`, {
@@ -224,7 +253,8 @@ function AdminPanel() {
 
         setIsAddMessModalOpen(false);
         setShowMessPassword(false);
-        setNewMessData({ name: '', owner: '', location: '', phone: '+91 ', email: '', password: '', googleMapUrl: '' });
+        setPhoneError('');
+        setNewMessData({ name: '', owner: '', location: '', countryCode: '+91', phoneNum: '', email: '', password: '', googleMapUrl: '' });
         alert('Mess Owner and Mess registered successfully!');
       } else {
         alert('Error: ' + data.message);
@@ -1378,7 +1408,40 @@ function AdminPanel() {
                   </div>
                   <div>
                     <label className="info-label">Phone Number</label>
-                    <input type="text" required className="edit-input" placeholder="+91 00000 00000" value={newMessData.phone} onChange={e => setNewMessData({...newMessData, phone: e.target.value})} style={{ width: '100%', marginTop: 4 }} />
+                    <div style={{ display: 'flex', gap: '8px', marginTop: 4 }}>
+                      <select 
+                        className="edit-input" 
+                        style={{ width: '100px', padding: '0 8px' }}
+                        value={newMessData.countryCode}
+                        onChange={(e) => {
+                          setNewMessData({...newMessData, countryCode: e.target.value, phoneNum: ''});
+                          setPhoneError('');
+                        }}
+                      >
+                        <option value="+91">+91 (IN)</option>
+                        <option value="+44">+44 (UK)</option>
+                        <option value="+971">+971 (UAE)</option>
+                      </select>
+                      <input 
+                        type="tel" 
+                        required 
+                        className="edit-input" 
+                        placeholder={PHONE_RULES[newMessData.countryCode]?.placeholder || 'Number'} 
+                        value={newMessData.phoneNum} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewMessData({...newMessData, phoneNum: val});
+                          const rule = PHONE_RULES[newMessData.countryCode];
+                          if (val && rule && !rule.pattern.test(val.replace(/\s/g, ''))) {
+                            setPhoneError(`Invalid format. ${rule.hint}`);
+                          } else {
+                            setPhoneError('');
+                          }
+                        }} 
+                        style={{ flex: 1 }} 
+                      />
+                    </div>
+                    {phoneError && <div style={{ color: '#EF4444', fontSize: '11px', marginTop: '4px' }}>{phoneError}</div>}
                   </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
