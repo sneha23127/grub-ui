@@ -295,6 +295,7 @@ function OwnerPanel() {
   };
 
   const [phoneError, setPhoneError] = useState('');
+  const [subEmailError, setSubEmailError] = useState('');
 
   useEffect(() => {
     let dailyCost = 0;
@@ -1997,9 +1998,19 @@ function OwnerPanel() {
                     placeholder="Enter student's email" 
                     className="edit-input" 
                     value={newSubData.email} 
-                    onChange={e => setNewSubData({...newSubData, email: e.target.value})} 
-                    style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 8, border: '1px solid #DDD' }} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setNewSubData({...newSubData, email: val});
+                      const el = val.trim().toLowerCase();
+                      setSubEmailError(
+                        el && !el.endsWith('@gmail.com') && !el.endsWith('@kristujayanti.com')
+                          ? 'Must be @gmail.com or @kristujayanti.com'
+                          : ''
+                      );
+                    }}
+                    style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 8, border: subEmailError ? '1px solid #EF4444' : '1px solid #DDD' }} 
                   />
+                  {subEmailError && <div style={{ color: '#EF4444', fontSize: '11px', marginTop: '4px' }}>{subEmailError}</div>}
                 </div>
 
                 <div>

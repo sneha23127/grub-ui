@@ -13,6 +13,7 @@ function ForgotPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   // UI State
   const [loading, setLoading] = useState(false);
@@ -251,12 +252,22 @@ function ForgotPassword() {
                 type="email" 
                 name="email" 
                 value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setEmail(val);
+                  const el = val.trim().toLowerCase();
+                  setEmailError(
+                    el && !el.endsWith('@gmail.com') && !el.endsWith('@kristujayanti.com')
+                      ? 'Must be @gmail.com or @kristujayanti.com'
+                      : ''
+                  );
+                }} 
                 className="input-field" 
                 placeholder="you@example.com" 
                 disabled={otpSent && cooldown > 0}
                 required
               />
+              {emailError && <div style={{ color: '#EF4444', fontSize: '11px', marginTop: '4px' }}>{emailError}</div>}
             </div>
 
             {/* Verification Code */}

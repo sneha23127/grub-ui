@@ -150,6 +150,7 @@ function AdminPanel() {
   const [isAddMessModalOpen, setIsAddMessModalOpen] = useState(false);
   const [showMessPassword, setShowMessPassword] = useState(false);
   const [phoneError, setPhoneError] = useState('');
+  const [messEmailError, setMessEmailError] = useState('');
   const [newMessData, setNewMessData] = useState({ 
     name: '', 
     owner: '', 
@@ -1404,7 +1405,13 @@ function AdminPanel() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <div>
                     <label className="info-label">Email Address</label>
-                    <input type="email" required autoComplete="off" className="edit-input" placeholder="owner@email.com" value={newMessData.email} onChange={e => setNewMessData({...newMessData, email: e.target.value})} style={{ width: '100%', marginTop: 4 }} />
+                    <input type="email" required autoComplete="off" className="edit-input" placeholder="owner@gmail.com" value={newMessData.email} onChange={e => {
+                      const val = e.target.value;
+                      setNewMessData({...newMessData, email: val});
+                      const el = val.trim().toLowerCase();
+                      setMessEmailError(el && !el.endsWith('@gmail.com') ? 'Must be a Gmail address (@gmail.com)' : '');
+                    }} style={{ width: '100%', marginTop: 4 }} />
+                    {messEmailError && <div style={{ color: '#EF4444', fontSize: '11px', marginTop: '4px' }}>{messEmailError}</div>}
                   </div>
                   <div>
                     <label className="info-label">Phone Number</label>

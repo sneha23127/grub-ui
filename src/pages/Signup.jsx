@@ -31,6 +31,7 @@ const PHONE_RULES = {
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [phoneError, setPhoneError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -53,6 +54,26 @@ function Signup() {
       // Clear phone number when country code changes so stale digits don't persist
       ...(name === 'countryCode' ? { phoneNum: '' } : {})
     }));
+
+    // Live email validation
+    if (name === 'email' || name === 'role') {
+      const emailVal = name === 'email' ? value : formData.email;
+      const roleVal  = name === 'role'  ? value : formData.role;
+      if (emailVal) {
+        const el = emailVal.trim().toLowerCase();
+        if (roleVal === 'mess_owner') {
+          setEmailError(el.endsWith('@gmail.com') ? '' : 'Mess owner email must be @gmail.com');
+        } else {
+          setEmailError(
+            (el.endsWith('@gmail.com') || el.endsWith('@kristujayanti.com'))
+              ? ''
+              : 'Must be @gmail.com or @kristujayanti.com'
+          );
+        }
+      } else {
+        setEmailError('');
+      }
+    }
 
     // Live phone validation feedback
     if (name === 'phoneNum' || name === 'countryCode') {
@@ -190,7 +211,8 @@ function Signup() {
             {/* Email Address */}
             <div className="input-group">
               <label className="input-label">Email Address</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} className="input-field" placeholder="you@example.com" />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className={`input-field${emailError ? ' input-error' : ''}`} placeholder="you@example.com" />
+              {emailError && <div style={{ color: '#EF4444', fontSize: '11px', marginTop: '4px' }}>{emailError}</div>}
             </div>
 
             {/* Phone Number */}
