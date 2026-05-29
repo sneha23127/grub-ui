@@ -33,6 +33,7 @@ function Compare() {
           fullAddress: m.address || "Location not set",
           latitude: m.latitude,
           longitude: m.longitude,
+          image: m.details?.image || null,
           phone: m.phone || "Not set",
           pricing: m.details?.pricing || { breakfast: 0, lunchVeg: 0, lunchNonVeg: 0, dinnerVeg: 0, dinnerNonVeg: 0 },
           menu: m.details?.timings || { breakfast: "00:00 AM - 00:00 AM", lunch: "00:00 PM - 00:00 PM", dinner: "00:00 PM - 00:00 PM" },
@@ -164,8 +165,25 @@ function Compare() {
                 <div className="matrix-row header-cards-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
                   <div className="matrix-cell empty-cell"></div>
                   {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell profile-cell">
-                      <div style={{ height: '120px', background: 'url(https://via.placeholder.com/400x200?text=+) center/cover no-repeat #E8E8E8', borderRadius: '8px', position: 'relative', overflow: 'hidden' }}>
+                    <div
+                        key={mess.id}
+                        className="matrix-cell profile-cell"
+                      >
+                        <div style={{
+                          height: '120px',
+                          background: mess.image
+                            ? `url(${mess.image}) center/cover no-repeat`
+                            : 'linear-gradient(135deg, #F26B2E22 0%, #F1D6C6 100%)',
+                          borderRadius: '8px',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {!mess.image && (
+                            <span style={{ fontSize: '36px', opacity: 0.4 }}>🍽️</span>
+                          )}
                         <div className={`mess-tag ${mess.tag && mess.tag.toLowerCase() === 'veg' ? 'veg' : (mess.tag && mess.tag.toLowerCase().includes('non-veg') ? 'non-veg' : '')}`} style={{ position: 'absolute', top: '8px', left: '8px', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>
                           {mess.tag}
                         </div>
