@@ -151,8 +151,6 @@ function AdminPanel() {
   const [showMessPassword, setShowMessPassword] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [messEmailError, setMessEmailError] = useState('');
-  const [adminLocating, setAdminLocating] = useState(false);
-  const [adminLocStatus, setAdminLocStatus] = useState('');
   const [newMessData, setNewMessData] = useState({ 
     name: '', 
     owner: '', 
@@ -161,9 +159,7 @@ function AdminPanel() {
     phoneNum: '',
     email: '',
     password: '',
-    googleMapUrl: '',
-    latitude: null,
-    longitude: null
+    googleMapUrl: ''
   });
 
   const handleToggleMessStatus = async (messId, newStatus) => {
@@ -176,31 +172,6 @@ function AdminPanel() {
     } catch (error) {
       alert('Error updating status: ' + error.message);
     }
-  };
-
-  const detectMessLocation = () => {
-    if (!navigator.geolocation) {
-      setAdminLocStatus('error');
-      return;
-    }
-    setAdminLocating(true);
-    setAdminLocStatus('');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        console.log('[AdminPanel] Detected mess location:', lat, lng);
-        setNewMessData(prev => ({ ...prev, latitude: lat, longitude: lng }));
-        setAdminLocating(false);
-        setAdminLocStatus('success');
-      },
-      (err) => {
-        console.warn('[AdminPanel] Location error:', err.message);
-        setAdminLocating(false);
-        setAdminLocStatus('error');
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
   };
 
   const handleAddMess = async (e) => {
@@ -244,9 +215,7 @@ function AdminPanel() {
           phone: cleanPhone,
           mess_name: newMessData.name,
           address: newMessData.location,
-          googleMapUrl: newMessData.googleMapUrl,
-          latitude: newMessData.latitude || null,
-          longitude: newMessData.longitude || null
+          googleMapUrl: newMessData.googleMapUrl
         }),
       });
 
@@ -286,8 +255,7 @@ function AdminPanel() {
         setIsAddMessModalOpen(false);
         setShowMessPassword(false);
         setPhoneError('');
-        setNewMessData({ name: '', owner: '', location: '', countryCode: '+91', phoneNum: '', email: '', password: '', googleMapUrl: '', latitude: null, longitude: null });
-        setAdminLocStatus('');
+        setNewMessData({ name: '', owner: '', location: '', countryCode: '+91', phoneNum: '', email: '', password: '', googleMapUrl: '' });
         alert('Mess Owner and Mess registered successfully!');
       } else {
         alert('Error: ' + data.message);
@@ -1521,30 +1489,6 @@ function AdminPanel() {
                 <div>
                   <label className="info-label">Mess Location</label>
                   <input type="text" required className="edit-input" placeholder="Area, City" value={newMessData.location} onChange={e => setNewMessData({...newMessData, location: e.target.value})} style={{ width: '100%', marginTop: 4 }} />
-                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <button
-                      type="button"
-                      onClick={detectMessLocation}
-                      disabled={adminLocating}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
-                        background: adminLocating ? '#94A3B8' : '#1E293B', color: '#fff',
-                        border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600,
-                        cursor: adminLocating ? 'not-allowed' : 'pointer'
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
-                      {adminLocating ? 'Detecting...' : 'Detect Location'}
-                    </button>
-                    {adminLocStatus === 'success' && (
-                      <span style={{ color: '#10B981', fontSize: 12, fontWeight: 600 }}>
-                        ✓ GPS captured ({newMessData.latitude?.toFixed(4)}, {newMessData.longitude?.toFixed(4)})
-                      </span>
-                    )}
-                    {adminLocStatus === 'error' && (
-                      <span style={{ color: '#EF4444', fontSize: 12, fontWeight: 600 }}>✗ Location denied</span>
-                    )}
-                  </div>
                 </div>
 
                 <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
