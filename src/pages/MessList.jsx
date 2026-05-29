@@ -47,6 +47,10 @@ function MessList() {
 
           const totalPrice = details.subscriptionPlans?.oneMonth || 0;
 
+          const lat = parseFloat(m.latitude);
+          const lng = parseFloat(m.longitude);
+          console.log(`[MessList] ${m.mess_name || m.name}: lat=${lat}, lng=${lng}`);
+
           return {
             id: m.id,
             name: m.mess_name || "New Mess",
@@ -59,8 +63,8 @@ function MessList() {
             categories: specials.length > 0 ? specials : ['Menu not set'],
             price: totalPrice > 0 ? '₹' + totalPrice.toLocaleString('en-IN') : null,
             address: m.address || "Location not set",
-            latitude: m.latitude,
-            longitude: m.longitude,
+            latitude: lat,
+            longitude: lng,
             image: details.image || null
           };
         });
@@ -73,6 +77,7 @@ function MessList() {
           const withDistances = await Promise.all(
             mapped.map(async (m) => {
               const direct = getDistanceFromCoords(userCoords, m.latitude, m.longitude);
+              console.log(`[MessList] Distance for ${m.name}: direct from coords = ${direct}`);
               const distance = direct !== null ? direct : await getDistanceToMess(userCoords, m.address);
               return { ...m, distance };
             })

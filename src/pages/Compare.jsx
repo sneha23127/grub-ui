@@ -20,26 +20,31 @@ function Compare() {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messes`);
       if (res.data.status === 'success') {
-        const mapped = res.data.messes.map(m => ({
-          id: m.id,
-          name: m.mess_name,
-          owner: m.name,
-          rating: Number(m.avg_rating).toFixed(1) || "0.0",
-          reviews: m.total_reviews || 0,
-          distance: "Calculating...",
-          type: m.details?.type || 'Standard',
-          tag: m.details?.tag || 'GENERAL',
-          price: m.details?.subscriptionPlans?.oneMonthVeg ? '₹' + m.details.subscriptionPlans.oneMonthVeg.toLocaleString('en-IN') : 'Price Not Set',
-          fullAddress: m.address || "Location not set",
-          latitude: m.latitude,
-          longitude: m.longitude,
-          image: m.details?.image || null,
+        const mapped = res.data.messes.map(m => {
+          const lat = parseFloat(m.latitude);
+          const lng = parseFloat(m.longitude);
+          console.log(`[Compare] ${m.mess_name || m.name}: lat=${lat}, lng=${lng}`);
+          return {
+            id: m.id,
+            name: m.mess_name,
+            owner: m.name,
+            rating: Number(m.avg_rating).toFixed(1) || "0.0",
+            reviews: m.total_reviews || 0,
+            distance: "Calculating...",
+            type: m.details?.type || 'Standard',
+            tag: m.details?.tag || 'GENERAL',
+            price: m.details?.subscriptionPlans?.oneMonthVeg ? '₹' + m.details.subscriptionPlans.oneMonthVeg.toLocaleString('en-IN') : 'Price Not Set',
+            fullAddress: m.address || "Location not set",
+            latitude: lat,
+            longitude: lng,
+            image: m.details?.image || null,
           phone: m.phone || "Not set",
           pricing: m.details?.pricing || { breakfast: 0, breakfastVeg: 0, breakfastNonVeg: 0, lunchVeg: 0, lunchNonVeg: 0, dinnerVeg: 0, dinnerNonVeg: 0 },
           menu: m.details?.timings || { breakfast: "00:00 AM - 00:00 AM", lunch: "00:00 PM - 00:00 PM", dinner: "00:00 PM - 00:00 PM" },
           plans: m.details?.subscriptionPlans || { trialVeg: 0, trialNonVeg: 0, oneMonthVeg: 0, oneMonthNonVeg: 0, threeMonthVeg: 0, threeMonthNonVeg: 0 },
           homeDelivery: m.details?.homeDelivery || false
-        }));
+        };
+        });
         setMesses(mapped);
 
         // Compute distances — use stored lat/lng from DB first (instant),
@@ -49,6 +54,7 @@ function Compare() {
           const withDistances = await Promise.all(
             mapped.map(async (m) => {
               const direct = getDistanceFromCoords(userCoords, m.latitude, m.longitude);
+              console.log(`[Compare] Distance for ${m.name}: direct from coords = ${direct}`);
               const distance = direct !== null ? direct : await getDistanceToMess(userCoords, m.fullAddress);
               return { ...m, distance };
             })
