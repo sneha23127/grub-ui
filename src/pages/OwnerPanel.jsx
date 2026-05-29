@@ -1987,6 +1987,7 @@ function OwnerPanel() {
                   <input 
                     type="email" 
                     required 
+                    autoComplete="off"
                     placeholder="Enter student's email" 
                     className="edit-input" 
                     value={newSubData.email} 
@@ -2040,6 +2041,7 @@ function OwnerPanel() {
                     <input 
                       type={showSubPassword ? "text" : "password"} 
                       required 
+                      autoComplete="new-password"
                       placeholder="Enter student's login password" 
                       className="edit-input" 
                       value={newSubData.password} 
