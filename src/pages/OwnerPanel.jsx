@@ -100,12 +100,12 @@ function OwnerPanel() {
         pricing: editOwnerData.pricing,
         timings: editOwnerData.timings,
         subscriptionPlans: {
-          trialVeg: (dailyRate.breakfast + dailyRate.lunchVeg + dailyRate.dinnerVeg) * 15,
-          trialNonVeg: (dailyRate.lunchNonVeg + dailyRate.dinnerNonVeg) * 15,
-          oneMonthVeg: (dailyRate.breakfast + dailyRate.lunchVeg + dailyRate.dinnerVeg) * 30,
-          oneMonthNonVeg: (dailyRate.lunchNonVeg + dailyRate.dinnerNonVeg) * 30,
-          threeMonthVeg: (dailyRate.breakfast + dailyRate.lunchVeg + dailyRate.dinnerVeg) * 90,
-          threeMonthNonVeg: (dailyRate.lunchNonVeg + dailyRate.dinnerNonVeg) * 90
+          trialVeg: ((Number(dailyRate.breakfastVeg) || Number(dailyRate.breakfast) || 0) + Number(dailyRate.lunchVeg || 0) + Number(dailyRate.dinnerVeg || 0)) * 15,
+          trialNonVeg: ((Number(dailyRate.breakfastNonVeg) || Number(dailyRate.breakfast) || 0) + Number(dailyRate.lunchNonVeg || 0) + Number(dailyRate.dinnerNonVeg || 0)) * 15,
+          oneMonthVeg: ((Number(dailyRate.breakfastVeg) || Number(dailyRate.breakfast) || 0) + Number(dailyRate.lunchVeg || 0) + Number(dailyRate.dinnerVeg || 0)) * 30,
+          oneMonthNonVeg: ((Number(dailyRate.breakfastNonVeg) || Number(dailyRate.breakfast) || 0) + Number(dailyRate.lunchNonVeg || 0) + Number(dailyRate.dinnerNonVeg || 0)) * 30,
+          threeMonthVeg: ((Number(dailyRate.breakfastVeg) || Number(dailyRate.breakfast) || 0) + Number(dailyRate.lunchVeg || 0) + Number(dailyRate.dinnerVeg || 0)) * 90,
+          threeMonthNonVeg: ((Number(dailyRate.breakfastNonVeg) || Number(dailyRate.breakfast) || 0) + Number(dailyRate.lunchNonVeg || 0) + Number(dailyRate.dinnerNonVeg || 0)) * 90
         },
         homeDelivery: editOwnerData.homeDelivery,
         deliveryCharge: editOwnerData.deliveryCharge,
@@ -239,7 +239,7 @@ function OwnerPanel() {
     address: '',
     password: '',
     selectedMeals: {
-      breakfast: true,
+      breakfast: { selected: true, type: 'Veg' },
       lunch: { selected: true, type: 'Veg' },
       dinner: { selected: false, type: 'Veg' }
     },
@@ -268,8 +268,9 @@ function OwnerPanel() {
 
   useEffect(() => {
     let dailyCost = 0;
-    if (newSubData.selectedMeals?.breakfast) {
-      dailyCost += Number(messInfo.pricing?.breakfast || 0);
+    if (newSubData.selectedMeals?.breakfast?.selected) {
+      const type = newSubData.selectedMeals.breakfast.type === 'Non-Veg' ? 'breakfastNonVeg' : 'breakfastVeg';
+      dailyCost += Number(messInfo.pricing?.[type] || messInfo.pricing?.breakfast || 0);
     }
     if (newSubData.selectedMeals?.lunch?.selected) {
       const type = newSubData.selectedMeals.lunch.type === 'Non-Veg' ? 'lunchNonVeg' : 'lunchVeg';
@@ -1720,7 +1721,13 @@ function OwnerPanel() {
       
       // Select meals validation
       const mealsList = [];
-      if (newSubData.selectedMeals.breakfast) mealsList.push('Breakfast');
+      if (newSubData.selectedMeals.breakfast.selected) {
+        if (messInfo.tag === 'Veg & Non-Veg') {
+          mealsList.push(`Breakfast (${newSubData.selectedMeals.breakfast.type})`);
+        } else {
+          mealsList.push('Breakfast');
+        }
+      }
       if (newSubData.selectedMeals.lunch.selected) {
         mealsList.push(`Lunch (${newSubData.selectedMeals.lunch.type})`);
       }
@@ -1817,7 +1824,7 @@ function OwnerPanel() {
             address: '',
             password: '',
             selectedMeals: {
-              breakfast: true,
+              breakfast: { selected: true, type: 'Veg' },
               lunch: { selected: true, type: 'Veg' },
               dinner: { selected: false, type: 'Veg' }
             },
@@ -1959,19 +1966,38 @@ function OwnerPanel() {
                   
                   {/* Breakfast Box */}
                   <div style={{ 
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-                    padding: '8px 12px', borderRadius: '8px', border: '1px solid #E2E8F0', 
-                    backgroundColor: newSubData.selectedMeals.breakfast ? '#FFF5EE' : 'white',
-                    borderColor: newSubData.selectedMeals.breakfast ? '#F26B2E' : '#E2E8F0',
-                    marginBottom: '8px', cursor: 'pointer'
-                  }} onClick={() => setNewSubData({
-                    ...newSubData, 
-                    selectedMeals: { ...newSubData.selectedMeals, breakfast: !newSubData.selectedMeals.breakfast }
-                  })}>
-                    <label style={{ display: 'flex', alignItems: 'center', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={newSubData.selectedMeals.breakfast} readOnly style={{ marginRight: '8px', accentColor: 'var(--orange)' }} /> Breakfast
-                    </label>
-                    <span style={{ color: '#F26B2E', fontSize: '12px', fontWeight: '600' }}>₹{messInfo.pricing?.breakfast}/day</span>
+                    padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0', 
+                    backgroundColor: newSubData.selectedMeals.breakfast.selected ? '#FFF5EE' : 'white',
+                    borderColor: newSubData.selectedMeals.breakfast.selected ? '#F26B2E' : '#E2E8F0',
+                    marginBottom: '8px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => setNewSubData({
+                      ...newSubData, 
+                      selectedMeals: { ...newSubData.selectedMeals, breakfast: { ...newSubData.selectedMeals.breakfast, selected: !newSubData.selectedMeals.breakfast.selected } }
+                    })}>
+                      <label style={{ display: 'flex', alignItems: 'center', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={newSubData.selectedMeals.breakfast.selected} readOnly style={{ marginRight: '8px', accentColor: 'var(--orange)' }} /> Breakfast
+                      </label>
+                      <span style={{ color: '#F26B2E', fontSize: '12px', fontWeight: '600' }}>
+                        ₹{newSubData.selectedMeals.breakfast.type === 'Non-Veg' ? (messInfo.pricing?.breakfastNonVeg || messInfo.pricing?.breakfast || 0) : (messInfo.pricing?.breakfastVeg || messInfo.pricing?.breakfast || 0)}/day
+                      </span>
+                    </div>
+                    {newSubData.selectedMeals.breakfast.selected && messInfo.tag === 'Veg & Non-Veg' && (
+                      <div style={{ display: 'flex', gap: '16px', marginTop: '8px', paddingLeft: '22px' }}>
+                        <label style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 500 }} onClick={e => e.stopPropagation()}>
+                          <input type="radio" name="modalBreakfastType" checked={newSubData.selectedMeals.breakfast.type === 'Veg'} onChange={() => setNewSubData({
+                            ...newSubData,
+                            selectedMeals: { ...newSubData.selectedMeals, breakfast: { ...newSubData.selectedMeals.breakfast, type: 'Veg' } }
+                          })} /> Veg
+                        </label>
+                        <label style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 500 }} onClick={e => e.stopPropagation()}>
+                          <input type="radio" name="modalBreakfastType" checked={newSubData.selectedMeals.breakfast.type === 'Non-Veg'} onChange={() => setNewSubData({
+                            ...newSubData,
+                            selectedMeals: { ...newSubData.selectedMeals, breakfast: { ...newSubData.selectedMeals.breakfast, type: 'Non-Veg' } }
+                          })} /> Non-Veg
+                        </label>
+                      </div>
+                    )}
                   </div>
 
                   {/* Lunch Box */}
