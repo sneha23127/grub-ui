@@ -35,7 +35,7 @@ function Compare() {
           longitude: m.longitude,
           image: m.details?.image || null,
           phone: m.phone || "Not set",
-          pricing: m.details?.pricing || { breakfast: 0, lunchVeg: 0, lunchNonVeg: 0, dinnerVeg: 0, dinnerNonVeg: 0 },
+          pricing: m.details?.pricing || { breakfast: 0, breakfastVeg: 0, breakfastNonVeg: 0, lunchVeg: 0, lunchNonVeg: 0, dinnerVeg: 0, dinnerNonVeg: 0 },
           menu: m.details?.timings || { breakfast: "00:00 AM - 00:00 AM", lunch: "00:00 PM - 00:00 PM", dinner: "00:00 PM - 00:00 PM" },
           plans: m.details?.subscriptionPlans || { trialVeg: 0, trialNonVeg: 0, oneMonthVeg: 0, oneMonthNonVeg: 0, threeMonthVeg: 0, threeMonthNonVeg: 0 },
           homeDelivery: m.details?.homeDelivery || false
@@ -232,9 +232,9 @@ function Compare() {
                 {/* PRICING Category */}
                 <div className="matrix-category">PRICING (PER MEAL)</div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
-                  <div className="matrix-cell row-label">Breakfast</div>
+                  <div className="matrix-cell row-label">Breakfast (Veg/Non-Veg)</div>
                   {selectedMesses.map(mess => (
-                    <div key={mess.id} className="matrix-cell">₹{mess.pricing.breakfast}/day</div>
+                    <div key={mess.id} className="matrix-cell">₹{mess.pricing.breakfastVeg || 0} / ₹{mess.pricing.breakfastNonVeg || 0}</div>
                   ))}
                 </div>
                 <div className="matrix-row" style={{ gridTemplateColumns: `200px repeat(${selectedMesses.length}, 1fr)` }}>
