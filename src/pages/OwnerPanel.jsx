@@ -1802,6 +1802,12 @@ function OwnerPanel() {
         alert('Please enter student email.');
         return;
       }
+      // Email domain validation for students
+      const emailLowerCheck = newSubData.email.trim().toLowerCase();
+      if (!emailLowerCheck.endsWith('@gmail.com') && !emailLowerCheck.endsWith('@kristujayanti.com')) {
+        alert('Student email must be a Gmail address (@gmail.com) or a Kristu Jayanti address (@kristujayanti.com).');
+        return;
+      }
       if (!newSubData.password.trim()) {
         alert('Please enter student password.');
         return;

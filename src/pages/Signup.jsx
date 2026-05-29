@@ -97,6 +97,21 @@ function Signup() {
       return;
     }
 
+    // Email domain validation based on role
+    const emailLower = formData.email.trim().toLowerCase();
+    if (formData.role === 'mess_owner') {
+      if (!emailLower.endsWith('@gmail.com')) {
+        alert("Mess owner email must be a Gmail address (@gmail.com).");
+        return;
+      }
+    } else {
+      // student / admin
+      if (!emailLower.endsWith('@gmail.com') && !emailLower.endsWith('@kristujayanti.com')) {
+        alert("Email must be a Gmail address (@gmail.com) or a Kristu Jayanti address (@kristujayanti.com).");
+        return;
+      }
+    }
+
     // Country-specific phone validation
     const rawPhone = formData.phoneNum.replace(/\s/g, '');
     if (!rawPhone || !phoneRule.pattern.test(rawPhone)) {

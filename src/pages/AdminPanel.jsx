@@ -176,10 +176,10 @@ function AdminPanel() {
   const handleAddMess = async (e) => {
     e.preventDefault();
 
-    // Basic validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(newMessData.email)) {
-      alert("Please enter a valid email address.");
+    // Basic validation – mess owner email must be @gmail.com
+    const emailLower = newMessData.email.trim().toLowerCase();
+    if (!emailLower.endsWith('@gmail.com')) {
+      alert("Mess owner email must be a Gmail address (@gmail.com).");
       return;
     }
 
