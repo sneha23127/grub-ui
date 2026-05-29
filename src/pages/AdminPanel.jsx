@@ -1458,6 +1458,20 @@ function AdminPanel() {
                         </svg>
                       </div>
                     </div>
+                    <div className="password-requirements" style={{ marginTop: '12px', padding: '12px', background: '#F8FAFC', borderRadius: '8px', fontSize: '12px' }}>
+                      <div style={{ color: newMessData.password.length >= 8 ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <Icon name={newMessData.password.length >= 8 ? "check-circle" : "circle"} size={14} /> At least 8 characters
+                      </div>
+                      <div style={{ color: /[A-Z]/.test(newMessData.password) ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <Icon name={/[A-Z]/.test(newMessData.password) ? "check-circle" : "circle"} size={14} /> One uppercase letter
+                      </div>
+                      <div style={{ color: /[0-9]/.test(newMessData.password) ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <Icon name={/[0-9]/.test(newMessData.password) ? "check-circle" : "circle"} size={14} /> One number
+                      </div>
+                      <div style={{ color: /[^A-Za-z0-9]/.test(newMessData.password) ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Icon name={/[^A-Za-z0-9]/.test(newMessData.password) ? "check-circle" : "circle"} size={14} /> One special character
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div>
