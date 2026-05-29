@@ -56,7 +56,9 @@ function Subscriptions() {
             messId: sub.owner_id,
             image: `https://placehold.co/150x150/F26B2E/FFFFFF?text=${sub.mess_name.charAt(0)}`,
             pauseStart: sub.pause_start_date ? new Date(sub.pause_start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
-            pauseEnd: sub.pause_end_date ? new Date(sub.pause_end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
+            pauseEnd: sub.pause_end_date ? new Date(sub.pause_end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null,
+            totalAmount: sub.total_amount,
+            planDuration: sub.plan_duration
           }));
 
           const active = mappedSubs.filter(s => s.statusType === 'ACTIVE');
@@ -145,6 +147,33 @@ function Subscriptions() {
     if (window.confirm(`Are you sure you want to cancel this subscription? This cannot be undone.`)) {
       handleUpdateStatus(id, 'CANCELLED');
     }
+  };
+
+  const handleResubscribe = (sub) => {
+    const meals = sub.meals || '';
+    const selectedMeals = {
+      breakfast: meals.toLowerCase().includes('breakfast'),
+      lunch: {
+        selected: meals.toLowerCase().includes('lunch'),
+        type: meals.toLowerCase().includes('lunch (non-veg)') || meals.toLowerCase().includes('lunch (nonveg)') ? 'Non-Veg' : 'Veg'
+      },
+      dinner: {
+        selected: meals.toLowerCase().includes('dinner'),
+        type: meals.toLowerCase().includes('dinner (non-veg)') || meals.toLowerCase().includes('dinner (nonveg)') ? 'Non-Veg' : 'Veg'
+      }
+    };
+
+    navigate('/payment', {
+      state: {
+        messName: sub.name,
+        messId: sub.messId,
+        totalAmount: parseFloat(sub.totalAmount) || 0,
+        selectedPlan: sub.planDuration || '1 Month',
+        homeDelivery: sub.delivery === 'Home Delivery',
+        paymentOptions: { upi: true, cash: true },
+        selectedMeals: selectedMeals
+      }
+    });
   };
 
 
@@ -334,12 +363,9 @@ function Subscriptions() {
             <div className="subs-card-meta" style={{ color: '#7E7E7E' }}>
               {sub.dateLabel} {sub.dateVal}
             </div>
-            <a href="#review" style={{ display: 'inline-block', marginTop: '4px', fontSize: '13px', color: '#F26B2E', textDecoration: 'underline' }}>
-              Write a review →
-            </a>
           </div>
           <div className="subs-card-actions">
-            <button className="btn-action-solid">
+            <button className="btn-action-solid" onClick={() => handleResubscribe(sub)}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12A10 10 0 1 1 12 2v4a6 6 0 1 0 6 6z"></path><polyline points="22 2 22 12 12 12"></polyline></svg>
               Resubscribe
             </button>
