@@ -183,13 +183,13 @@ function AdminPanel() {
       return;
     }
 
-    const phoneRule = PHONE_RULES[newMessData.countryCode];
+    const phoneRule = PHONE_RULES['+91'];
     const rawPhone = newMessData.phoneNum.replace(/\s/g, '');
-    if (!rawPhone || (phoneRule && !phoneRule.pattern.test(rawPhone))) {
-      alert(`Invalid phone number. ${phoneRule?.hint || 'Valid number required'}.`);
+    if (!rawPhone || !phoneRule.pattern.test(rawPhone)) {
+      alert(`Invalid phone number. ${phoneRule.hint}.`);
       return;
     }
-    const cleanPhone = `${newMessData.countryCode} ${rawPhone}`;
+    const cleanPhone = `+91 ${rawPhone}`;
 
     const hasLength = newMessData.password.length >= 8;
     const hasUppercase = /[A-Z]/.test(newMessData.password);
@@ -1409,29 +1409,21 @@ function AdminPanel() {
                   <div>
                     <label className="info-label">Phone Number</label>
                     <div style={{ display: 'flex', gap: '8px', marginTop: 4 }}>
-                      <select 
-                        className="edit-input" 
-                        style={{ width: '100px', padding: '0 8px' }}
-                        value={newMessData.countryCode}
-                        onChange={(e) => {
-                          setNewMessData({...newMessData, countryCode: e.target.value, phoneNum: ''});
-                          setPhoneError('');
-                        }}
-                      >
-                        <option value="+91">+91 (IN)</option>
-                        <option value="+44">+44 (UK)</option>
-                        <option value="+971">+971 (UAE)</option>
-                      </select>
+                      <div style={{ 
+                        display: 'flex', alignItems: 'center', padding: '0 12px',
+                        background: '#F1F5F9', border: '1px solid #DDD', borderRadius: 8,
+                        fontWeight: 700, fontSize: 13, color: '#374151', whiteSpace: 'nowrap'
+                      }}>+91</div>
                       <input 
                         type="tel" 
                         required 
                         className="edit-input" 
-                        placeholder={PHONE_RULES[newMessData.countryCode]?.placeholder || 'Number'} 
+                        placeholder="98765 43210" 
                         value={newMessData.phoneNum} 
                         onChange={(e) => {
                           const val = e.target.value;
                           setNewMessData({...newMessData, phoneNum: val});
-                          const rule = PHONE_RULES[newMessData.countryCode];
+                          const rule = PHONE_RULES['+91'];
                           if (val && rule && !rule.pattern.test(val.replace(/\s/g, ''))) {
                             setPhoneError(`Invalid format. ${rule.hint}`);
                           } else {

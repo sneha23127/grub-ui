@@ -261,18 +261,17 @@ function OwnerPanel() {
   const [newSubData, setNewSubData] = useState({
     name: '',
     email: '',
-    countryCode: '+91',
     phoneNum: '',
     address: '',
     password: '',
     selectedMeals: {
-      breakfast: true,
-      lunch: { selected: true, type: 'Veg' },
+      breakfast: false,
+      lunch: { selected: false, type: 'Veg' },
       dinner: { selected: false, type: 'Veg' }
     },
-    plan_duration: '1 Month',
+    plan_duration: '',
     homeDelivery: false,
-    payment_method: 'Cash',
+    payment_method: '',
     total_amount: '0'
   });
 
@@ -1810,14 +1809,22 @@ function OwnerPanel() {
         alert('Please enter student physical address.');
         return;
       }
-      
-      const phoneRule = PHONE_RULES[newSubData.countryCode];
-      const rawPhone = newSubData.phoneNum.replace(/\s/g, '');
-      if (!rawPhone || (phoneRule && !phoneRule.pattern.test(rawPhone))) {
-        alert(`Invalid phone number. ${phoneRule?.hint || 'Valid number required'}.`);
+      if (!newSubData.plan_duration) {
+        alert('Please select a plan duration.');
         return;
       }
-      const formattedPhone = `${newSubData.countryCode} ${rawPhone}`;
+      if (!newSubData.payment_method) {
+        alert('Please select a payment method.');
+        return;
+      }
+      
+      const phoneRule = PHONE_RULES['+91'];
+      const rawPhone = newSubData.phoneNum.replace(/\s/g, '');
+      if (!rawPhone || !phoneRule.pattern.test(rawPhone)) {
+        alert(`Invalid phone number. ${phoneRule.hint}.`);
+        return;
+      }
+      const formattedPhone = `+91 ${rawPhone}`;
       
       const userEmail = newSubData.email.trim().toLowerCase();
       
@@ -1918,17 +1925,17 @@ function OwnerPanel() {
           setNewSubData({
             name: '',
             email: '',
-            phone: '+91 ',
+            phoneNum: '',
             address: '',
             password: '',
             selectedMeals: {
-              breakfast: true,
-              lunch: { selected: true, type: 'Veg' },
+              breakfast: false,
+              lunch: { selected: false, type: 'Veg' },
               dinner: { selected: false, type: 'Veg' }
             },
-            plan_duration: '1 Month',
+            plan_duration: '',
             homeDelivery: false,
-            payment_method: 'Cash',
+            payment_method: '',
             total_amount: '0'
           });
           fetchSubscribers();
@@ -1985,30 +1992,22 @@ function OwnerPanel() {
                 <div>
                   <label className="info-label">Phone Number</label>
                   <div style={{ display: 'flex', gap: '8px', marginTop: 4 }}>
-                    <select 
-                      className="edit-input" 
-                      style={{ width: '100px', padding: '0 8px', borderRadius: 8, border: '1px solid #DDD' }}
-                      value={newSubData.countryCode}
-                      onChange={(e) => {
-                        setNewSubData({...newSubData, countryCode: e.target.value, phoneNum: ''});
-                        setPhoneError('');
-                      }}
-                    >
-                      <option value="+91">+91 (IN)</option>
-                      <option value="+44">+44 (UK)</option>
-                      <option value="+971">+971 (UAE)</option>
-                    </select>
+                    <div style={{ 
+                      display: 'flex', alignItems: 'center', padding: '0 12px',
+                      background: '#F1F5F9', border: '1px solid #DDD', borderRadius: 8,
+                      fontWeight: 700, fontSize: 13, color: '#374151', whiteSpace: 'nowrap'
+                    }}>+91</div>
                     <input 
                       type="tel" 
                       required 
-                      placeholder={PHONE_RULES[newSubData.countryCode]?.placeholder || 'Number'} 
+                      placeholder="98765 43210" 
                       className="edit-input" 
                       value={newSubData.phoneNum} 
                       onChange={(e) => {
                         const val = e.target.value;
                         setNewSubData({...newSubData, phoneNum: val});
-                        const rule = PHONE_RULES[newSubData.countryCode];
-                        if (val && rule && !rule.pattern.test(val.replace(/\s/g, ''))) {
+                        const rule = PHONE_RULES['+91'];
+                        if (val && !rule.pattern.test(val.replace(/\s/g, ''))) {
                           setPhoneError(`Invalid format. ${rule.hint}`);
                         } else {
                           setPhoneError('');
@@ -2203,6 +2202,7 @@ function OwnerPanel() {
                       onChange={e => setNewSubData({...newSubData, plan_duration: e.target.value})} 
                       style={{ width: '100%', marginTop: 4, padding: '8px 12px', borderRadius: 8, border: '1px solid #DDD', backgroundColor: 'white' }}
                     >
+                      <option value="" disabled>Select Duration</option>
                       <option>Trial (15 Days)</option>
                       <option>1 Month</option>
                       <option>3 Months</option>
@@ -2217,6 +2217,7 @@ function OwnerPanel() {
                       onChange={e => setNewSubData({...newSubData, payment_method: e.target.value})} 
                       style={{ width: '100%', marginTop: 4, padding: '8px 12px', borderRadius: 8, border: '1px solid #DDD', backgroundColor: 'white' }}
                     >
+                      <option value="" disabled>Select Method</option>
                       <option>Cash</option>
                       <option>UPI</option>
                     </select>
