@@ -1940,8 +1940,8 @@ function OwnerPanel() {
     };
 
     return (
-      <div className="admin-modal-overlay" onClick={closeAddSubModal}>
-        <div className="admin-modal-content" style={{ maxWidth: 840, width: '90%' }} onClick={e => e.stopPropagation()}>
+      <div className="admin-modal-overlay">
+        <div className="admin-modal-content" style={{ maxWidth: 840, width: '90%' }}>
           <div className="modal-header">
             <div>
               <h2 className="modal-title">Add New Subscriber</h2>

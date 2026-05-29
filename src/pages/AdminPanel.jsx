@@ -1382,8 +1382,8 @@ function AdminPanel() {
   const renderModal = () => {
     if (isAddMessModalOpen) {
       return (
-        <div className="admin-modal-overlay" onClick={() => { setIsAddMessModalOpen(false); setShowMessPassword(false); }}>
-          <div className="admin-modal-content" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+        <div className="admin-modal-overlay">
+          <div className="admin-modal-content" style={{ maxWidth: 500 }}>
             <div className="modal-header">
               <div>
                 <h2 className="modal-title">Add New Mess</h2>
